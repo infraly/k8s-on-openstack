@@ -1,0 +1,9 @@
+---
+  - cloud: sandbox
+  - security_group: hello
+  - image: xenial-server-cloudimg-amd64-raw
+  - key_name: francois
+  - server_name: hello
+  - server_memory: 1024 # MB
+  - server_volume_size: 25 # GB
+  - server_count: 3

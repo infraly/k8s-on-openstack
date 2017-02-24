@@ -1,0 +1,9 @@
+[Global]
+auth-url = {{ hostvars['localhost'].openstack.clouds[0].auth.auth_url }}
+username = {{ hostvars['localhost'].openstack.clouds[0].auth.username }}
+password = {{ hostvars['localhost'].openstack.clouds[0].auth.password }}
+tenant-name = {{ hostvars['localhost'].openstack.clouds[0].auth.project_name }}
+region = {{ hostvars['localhost'].openstack.clouds[0].region_name }}
+
+#[LoadBalancer]
+#subnet-id = a7d3955a-0a10-4647-b090-6fcde70c1d77

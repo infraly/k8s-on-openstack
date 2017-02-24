@@ -1,0 +1,163 @@
+---
+- name: Launch k8s nodes
+  hosts: localhost
+  vars_files:
+    - vars.yaml
+  tasks:
+  - os_client_config:
+      clouds:
+        - "{{ cloud }}"
+
+  - os_security_group:
+      cloud: "{{ cloud }}"
+      name: "{{ security_group }}"
+
+  - os_security_group_rule:
+      cloud: "{{ cloud }}"
+      security_group: "{{ security_group }}"
+      remote_ip_prefix: 0.0.0.0/0
+
+  - os_security_group_rule:
+      cloud: "{{ cloud }}"
+      security_group: "{{ security_group }}"
+      remote_group: "{{ security_group }}"
+
+  - os_server:
+      cloud: "{{ cloud }}"
+      security_groups: "{{ security_group }}"
+      state: present
+      name: "k8s-{{ item }}"
+      image: "{{ image }}"
+      key_name: "{{ key_name }}"
+      flavor_ram: "{{ server_memory }}"
+      #boot_from_volume: True
+      #volume_size: "{{ server_volume_size }}"
+      nics:
+        - net-name: public
+      userdata: |
+        #cloud-config
+        package_upgrade: true
+    register: "nodes"
+    with_sequence: count="{{ server_count }}"
+
+  - add_host:
+      name: "{{ item.server.name }}"
+      ansible_ssh_host: "{{ item.server.interface_ip }}"
+      ansible_ssh_user: ubuntu
+      groupname: nodes
+    with_items: "{{ nodes.results }}"
+
+  - wait_for:
+      host: "{{ item.server.interface_ip }}"
+      port: 22
+      search_regex: OpenSSH
+    with_items: "{{ nodes.results }}"
+
+  - shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
+    with_items: "{{ nodes.results }}"
+
+- name: Install Python 2 for Ubuntu 16.04 because ansible depends on it
+  hosts: nodes
+  gather_facts: false
+
+  pre_tasks:
+    - raw: sudo apt-get update && sudo apt-get -y install python-simplejson
+    - action: setup
+
+- name: Install repo and packages
+  hosts: nodes
+  vars_files:
+    - vars.yaml
+  become: true
+  tasks:
+    - apt_key:
+        url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+        state: present
+
+    - apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - apt:
+        update_cache: yes
+
+    - apt: name={{item}} state=installed
+      with_items:
+        - docker.io
+        - kubelet
+        - kubeadm
+        - kubectl
+        - kubernetes-cni
+
+    - name: add hosts
+      lineinfile:
+        dest: "/etc/hosts"
+        regexp: ".*{{ hostvars[item].ansible_hostname }}$"
+        line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].ansible_hostname }}"
+        state: present
+      when: hostvars[item].ansible_hostname is defined
+      with_items: "{{groups['all'] | default([])}}"
+
+    - template:
+        src: files/cloud-config.j2
+        dest: /etc/kubernetes/cloud-config
+        mode: 0600
+
+    - copy:
+        src: files/10-kubeadm.conf
+        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+        mode: 0600
+
+    - systemd:
+        state: restarted
+        daemon_reload: yes
+        name: kubelet
+
+- name: k8s cluster setup
+  hosts: nodes
+  become: true
+  tasks:
+    # Master
+    - name: kubeadm token generate
+      command: kubeadm token generate
+      register: token
+      when: inventory_hostname == groups.nodes[0]
+
+    - name: kubeadm init
+      command: "kubeadm init --cloud-provider openstack --token {{ token.stdout }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      when: inventory_hostname == groups.nodes[0]
+
+    # Minions
+    - name: kubeadm join
+      command: "kubeadm join --token {{ hostvars[groups['nodes'][0]]['token'].stdout }} {{ hostvars[groups.nodes[0]]['ansible_default_ipv4']['address'] }}"
+      args:
+        creates: /etc/kubernetes/kubelet.conf
+      when: inventory_hostname != groups.nodes[0]
+
+    # Master
+    - name: kubectl apply weave
+      command: kubectl apply -f https://git.io/weave-kube
+      when: inventory_hostname == groups.nodes[0]
+
+    - name: kubectl apply dashboard
+      command: kubectl apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+      when: inventory_hostname == groups.nodes[0]
+
+- name: Health check
+  hosts: nodes
+  tasks:
+    - shell: "kubectl get nodes"
+      when: inventory_hostname == groups.nodes[0]
+      register: nodes
+
+    - debug:
+        var: nodes.stdout_lines
+
+    - shell: "kubectl cluster-info"
+      when: inventory_hostname == groups.nodes[0]
+      register: clusterinfo
+
+    - debug:
+        var: clusterinfo.stdout_lines
