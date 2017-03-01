@@ -56,12 +56,13 @@
   - shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
     with_items: "{{ nodes.results }}"
 
-- name: Install Python 2 for Ubuntu 16.04 because ansible depends on it
+- name: Node preparation
   hosts: nodes
   gather_facts: false
 
   pre_tasks:
-    - raw: sudo apt-get update && sudo apt-get -y install python-simplejson
+    - raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done; sudo apt-get update && sudo apt-get -y install python-simplejson
+
     - action: setup
 
 - name: Install repo and packages
@@ -79,9 +80,9 @@
         state: present
 
     - apt:
+        name: "{{item}}"
+        state: installed
         update_cache: yes
-
-    - apt: name={{item}} state=installed
       with_items:
         - docker.io
         - kubelet
@@ -122,6 +123,11 @@
       command: kubeadm token generate
       register: token
       when: inventory_hostname == groups.nodes[0]
+
+#    - name: kubeadm get existing token
+#      command: sh -c '/usr/bin/kubectl -n kube-system get secret clusterinfo -o yaml | grep token-map | awk "{print \$2}" | base64 -d | sed "s|{||g;s|}||g;s|:|.|g;s/\"//g;" | xargs echo'
+#      register: token
+#      when: inventory_hostname == groups.nodes[0]
 
     - name: kubeadm init
       command: "kubeadm init --cloud-provider openstack --token {{ token.stdout }}"
