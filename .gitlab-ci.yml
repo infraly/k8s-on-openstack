@@ -11,6 +11,7 @@ stages:
 test:
   stage: test
   script:
+    - ansible-playbook --version
     - ansible-playbook --syntax-check site.yaml
     - ansible-playbook --syntax-check cleanup.yaml
 
