@@ -1,7 +1,7 @@
 image: ubuntu:17.04
 
 before_script:
-  - apt -yy update && apt -yy install ansible python-openstackclient
+  - apt -yy update && apt -yy install ansible python-openstackclient python-shade
 
 stages:
   - test
