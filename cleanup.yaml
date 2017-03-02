@@ -8,7 +8,7 @@
       cloud: "{{ cloud }}"
       state: absent
       name: "k8s-{{ item }}"
-    with_sequence: count="{{ server_count }}"
+    with_sequence: count="{{ node_count }}"
 
   - os_security_group:
       cloud: "{{ cloud }}"
