@@ -3,7 +3,7 @@ k8s-on-openstack
 
 An opiniated way to deploy a Kubernetes cluster on top of an OpenStack cloud.
 
-It uses the following tools to :
+It is based on the following tools:
 
   * `kubeadm`
   * `ansible`
