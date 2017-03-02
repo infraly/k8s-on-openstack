@@ -2,6 +2,18 @@ image: ubuntu:17.04
 
 before_script:
   - apt -yy update && apt -yy install ansible python-openstackclient python-shade
+	- mkdir -p ~/.config/openstack
+  - >
+cat << EOF > ~/.config/openstack/clouds.yaml
+clouds:
+  sandbox:
+    region_name: RegionOne
+    auth:
+      username: $OS_USERNAME
+      password: $OS_PASSWORD
+      project_name: $OS_PROJECT_NAME
+      auth_url: $OS_AUTH_URL
+EOF
 
 stages:
   - test
