@@ -12,7 +12,7 @@ It is based on the following tools:
 Getting started
 ---------------
 
-1. Edit parameters in `vars.yaml`:
+Edit parameters in `vars.yaml`:
 
   * `name`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
   * `cloud`: name of the target OpenStack cloud, usually defined in `~/.config/openstack/clouds.yaml`
@@ -21,13 +21,13 @@ Getting started
   * `node_memory`: how many MB of memory should instances have
   * `node_count`: how many instances should we provision
 
-2. Spin up a new cluster:
+Spin up a new cluster:
 
 ```console
 $ ansible-playbook site.yaml
 ```
 
-3. Destroy the cluster:
+Destroy the cluster:
 
 ```console
 $ ansible-playbook cleanup.yaml
