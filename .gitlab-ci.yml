@@ -1,4 +1,4 @@
-image: ubuntu:16.04
+image: ubuntu:16.10
 
 before_script:
   - apt -yy update && apt -yy install ansible python-openstackclient
