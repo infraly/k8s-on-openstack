@@ -1,0 +1,25 @@
+image: ubuntu:16.04
+
+before_script:
+  - apt -yy update && apt -yy install ansible python-openstackclient
+
+stages:
+	- test
+  - deploy
+	- cleanup
+
+test:
+	stage: test
+	script:
+		- ansible-playbook --syntax-check site.yaml
+		- ansible-playbook --syntax-check cleanup.yaml
+
+deploy:
+  stage: deploy
+  script:
+    - ansible-playbook site.yaml
+
+cleanup:
+  stage: cleanup
+  script:
+		- ansible-playbook cleanup.yaml
