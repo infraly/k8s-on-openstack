@@ -32,3 +32,10 @@ Destroy the cluster:
 ```console
 $ ansible-playbook cleanup.yaml
 ```
+
+References
+----------
+
+  * https://kubernetes.io/docs/getting-started-guides/kubeadm/
+  * https://www.weave.works/docs/net/latest/kube-addon/
+  * https://github.com/kubernetes/dashboard#kubernetes-dashboard
