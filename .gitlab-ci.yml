@@ -4,15 +4,15 @@ before_script:
   - apt -yy update && apt -yy install ansible python-openstackclient
 
 stages:
-	- test
+  - test
   - deploy
-	- cleanup
+  - cleanup
 
 test:
-	stage: test
-	script:
-		- ansible-playbook --syntax-check site.yaml
-		- ansible-playbook --syntax-check cleanup.yaml
+  stage: test
+  script:
+    - ansible-playbook --syntax-check site.yaml
+    - ansible-playbook --syntax-check cleanup.yaml
 
 deploy:
   stage: deploy
@@ -22,4 +22,4 @@ deploy:
 cleanup:
   stage: cleanup
   script:
-		- ansible-playbook cleanup.yaml
+    - ansible-playbook cleanup.yaml
