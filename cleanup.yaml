@@ -12,5 +12,5 @@
 
   - os_security_group:
       cloud: "{{ cloud }}"
-      name: "{{ security_group }}"
+      name: "sg-{{ name }}"
       state: absent

@@ -1,8 +1,7 @@
 ---
+  - name: k8s
   - cloud: sandbox
-  - security_group: hello
   - image: xenial-server-cloudimg-amd64
   - key_name: francois
-  - server_memory: 4096 # MB
-  - server_volume_size: 25 # GB
-  - server_count: 3
+  - node_memory: 4096 # MB
+  - node_count: 3

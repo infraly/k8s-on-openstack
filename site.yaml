@@ -10,35 +10,33 @@
 
   - os_security_group:
       cloud: "{{ cloud }}"
-      name: "{{ security_group }}"
+      name: "sg-{{ name }}"
 
   - os_security_group_rule:
       cloud: "{{ cloud }}"
-      security_group: "{{ security_group }}"
+      security_group: "sg-{{ name }}"
       remote_ip_prefix: 0.0.0.0/0
 
   - os_security_group_rule:
       cloud: "{{ cloud }}"
-      security_group: "{{ security_group }}"
-      remote_group: "{{ security_group }}"
+      security_group: "sg-{{ name }}"
+      remote_group: "sg-{{ name }}"
 
   - os_server:
       cloud: "{{ cloud }}"
-      security_groups: "{{ security_group }}"
+      security_groups: "sg-{{ name }}"
       state: present
       name: "k8s-{{ item }}"
       image: "{{ image }}"
       key_name: "{{ key_name }}"
-      flavor_ram: "{{ server_memory }}"
-      #boot_from_volume: True
-      #volume_size: "{{ server_volume_size }}"
+      flavor_ram: "{{ node_memory }}"
       nics:
         - net-name: public
       userdata: |
         #cloud-config
         package_upgrade: true
     register: "nodes"
-    with_sequence: count="{{ server_count }}"
+    with_sequence: count="{{ node_count }}"
 
   - add_host:
       name: "{{ item.server.name }}"
