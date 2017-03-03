@@ -2,6 +2,6 @@
   - name: k8s
   - cloud: sandbox
   - image: xenial-server-cloudimg-amd64
-  - key_name: francois
+  - key_name: gitlab-ci
   - node_memory: 4096 # MB
   - node_count: 3
