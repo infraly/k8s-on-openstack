@@ -1,5 +1,5 @@
 ---
-  - name: k8s
+  - name: k8s-gitlab-ci
   - cloud: sandbox
   - image: xenial-server-cloudimg-amd64
   - key_name: gitlab-ci
