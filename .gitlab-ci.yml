@@ -19,7 +19,6 @@ test:
   script:
     - ansible-playbook --version
     - ansible-playbook --syntax-check site.yaml
-    - ansible-playbook --syntax-check cleanup.yaml
 
 deploy:
   stage: deploy
@@ -29,4 +28,4 @@ deploy:
 cleanup:
   stage: cleanup
   script:
-    - ansible-playbook cleanup.yaml
+    - ansible-playbook site.yaml -e state=absent
