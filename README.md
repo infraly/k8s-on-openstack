@@ -30,7 +30,7 @@ $ ansible-playbook site.yaml
 Destroy the cluster:
 
 ```console
-$ ansible-playbook cleanup.yaml
+$ ansible-playbook site.yaml -e state=absent
 ```
 
 References
