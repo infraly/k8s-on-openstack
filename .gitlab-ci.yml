@@ -7,7 +7,7 @@ before_script:
   - mkdir -p ~/.ssh
   - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
   - openstack --os-cloud sandbox keypair delete gitlab-ci || true
-  - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa gitlab-ci
+  - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci
 
 stages:
   - test
