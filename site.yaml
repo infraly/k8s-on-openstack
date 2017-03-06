@@ -9,8 +9,6 @@
     node_memory: 4096 # MB
     node_count: 3
     state: present
-  vars_files:
-    - vars.yaml
   tasks:
   - os_client_config:
       clouds:
@@ -87,8 +85,6 @@
 
 - name: Install repo and packages
   hosts: nodes
-  vars_files:
-    - vars.yaml
   become: true
   tasks:
     - apt_key:

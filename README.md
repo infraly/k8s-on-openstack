@@ -12,7 +12,7 @@ It is based on the following tools:
 Getting started
 ---------------
 
-Edit parameters in `vars.yaml`:
+Edit custom parameters in `group_vars/nodes.yaml`, defaults are coming from `group_vars/all.yaml`:
 
   * `name`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
   * `cloud`: name of the target OpenStack cloud, usually defined in `~/.config/openstack/clouds.yaml`
