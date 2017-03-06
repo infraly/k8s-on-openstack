@@ -1,14 +1,6 @@
 ---
 - name: Launch k8s nodes
   hosts: localhost
-  vars:
-    name: k8s-gitlab-ci
-    cloud: sandbox
-    image: xenial-server-cloudimg-amd64
-    key_name: gitlab-ci
-    node_memory: 4096 # MB
-    node_count: 3
-    state: present
   tasks:
   - os_client_config:
       clouds:
