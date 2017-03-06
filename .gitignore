@@ -1,2 +1,2 @@
-vars.yaml
+group_vars/nodes.yaml
 *.retry
