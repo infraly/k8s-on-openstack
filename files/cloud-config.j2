@@ -3,7 +3,12 @@ auth-url = {{ hostvars['localhost'].openstack.clouds[0].auth.auth_url }}
 username = {{ hostvars['localhost'].openstack.clouds[0].auth.username }}
 password = {{ hostvars['localhost'].openstack.clouds[0].auth.password }}
 tenant-name = {{ hostvars['localhost'].openstack.clouds[0].auth.project_name }}
+{% if hostvars['localhost'].openstack.clouds[0].region_name is defined %}
 region = {{ hostvars['localhost'].openstack.clouds[0].region_name }}
+{% endif %}
+{% if hostvars['localhost'].openstack.clouds[0].auth.user_domain_name is defined %}
+domain-name = {{ hostvars['localhost'].openstack.clouds[0].auth.user_domain_name }}
+{% endif %}
 
 #[LoadBalancer]
 #subnet-id = a7d3955a-0a10-4647-b090-6fcde70c1d77
