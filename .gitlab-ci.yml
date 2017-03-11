@@ -2,18 +2,13 @@ image: ubuntu:17.04
 
 before_script:
   - apt -yy update && apt -yy install ansible python-openstackclient python-shade openssh-client
-  - mkdir -p ~/.config/openstack
-  - "echo -e \"clouds:\\n  sandbox:\\n    region_name: RegionOne\\n    auth:\\n      username: $OS_USERNAME\\n      password: $OS_PASSWORD\\n      project_name: $OS_PROJECT_NAME\\n      auth_url: $OS_AUTH_URL\" > ~/.config/openstack/clouds.yaml"
-  - mkdir -p ~/.ssh
-  - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
-  - openstack --os-cloud sandbox keypair delete gitlab-ci || true
-  - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci
 
 stages:
+  - syntax
   - test
 
 syntax:
-  stage: test
+  stage: syntax
   script:
     - ansible-playbook --version
     - ansible-playbook --syntax-check site.yaml
@@ -21,5 +16,11 @@ syntax:
 test:
   stage: test
   script:
+    - mkdir -p ~/.config/openstack
+    - "echo -e \"clouds:\\n  sandbox:\\n    region_name: RegionOne\\n    auth:\\n      username: $OS_USERNAME\\n      password: $OS_PASSWORD\\n      project_name: $OS_PROJECT_NAME\\n      auth_url: $OS_AUTH_URL\" > ~/.config/openstack/clouds.yaml"
+    - mkdir -p ~/.ssh
+    - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
+    - openstack --os-cloud sandbox keypair delete gitlab-ci || true
+    - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci
     - ansible-playbook site.yaml
     - ansible-playbook site.yaml -e state=absent
