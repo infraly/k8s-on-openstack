@@ -1,7 +1,4 @@
-image: ubuntu:17.04
-
-before_script:
-  - apt -yy update && apt -yy install ansible python-openstackclient python-shade openssh-client python-pip
+image: gitlab.infraly.ch:4567/francois/docker-ansible:master
 
 stages:
   - syntax
@@ -16,7 +13,6 @@ syntax:
 lint:
   stage: syntax
   script:
-    - pip2 install ansible-lint
     - ansible-lint site.yaml
   allow_failure: true
 
