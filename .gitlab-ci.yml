@@ -21,6 +21,7 @@ test:
   variables:
     CI_JOB_ID: $CI_JOB_ID
   script:
+    - printenv
     - mkdir -p ~/.config/openstack
     - "echo -e \"clouds:\\n  sandbox:\\n    region_name: RegionOne\\n    auth:\\n      username: $OS_USERNAME\\n      password: $OS_PASSWORD\\n      project_name: $OS_PROJECT_NAME\\n      auth_url: $OS_AUTH_URL\" > ~/.config/openstack/clouds.yaml"
     - mkdir -p ~/.ssh
