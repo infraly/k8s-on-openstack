@@ -14,7 +14,7 @@ syntax:
     - ansible-playbook --syntax-check site.yaml
 
 lint:
-  state: syntax
+  stage: syntax
   script:
     - pip2 install ansible-lint
     - ansible-lint site.yaml
