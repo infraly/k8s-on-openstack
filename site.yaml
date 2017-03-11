@@ -33,9 +33,6 @@
       image: "{{ image }}"
       key_name: "{{ key_name }}"
       flavor_ram: "{{ node_memory }}"
-      nics:
-        - net-name: private
-      floating_ip_pools: internet
       userdata: |
         #cloud-config
         package_upgrade: true
