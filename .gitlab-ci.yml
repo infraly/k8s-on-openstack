@@ -19,15 +19,15 @@ lint:
 test:
   stage: test
   variables:
-    CI_COMMIT_REF_SLUG: $CI_COMMIT_REF_SLUG
+    CI_JOB_ID: $CI_JOB_ID
   script:
     - mkdir -p ~/.config/openstack
     - "echo -e \"clouds:\\n  sandbox:\\n    region_name: RegionOne\\n    auth:\\n      username: $OS_USERNAME\\n      password: $OS_PASSWORD\\n      project_name: $OS_PROJECT_NAME\\n      auth_url: $OS_AUTH_URL\" > ~/.config/openstack/clouds.yaml"
     - mkdir -p ~/.ssh
     - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
-    - openstack --os-cloud sandbox keypair delete gitlab-ci-$CI_COMMIT_REF_SLUG || true
-    - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci-$CI_COMMIT_REF_SLUG
-    - sed -i -e "s/gitlab-ci/k8s-gitlab-ci-$CI_COMMIT_REF_SLUG/g" group_vars/all.yaml
+    - openstack --os-cloud sandbox keypair delete gitlab-ci-$CI_JOB_ID || true
+    - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci-$CI_JOB_ID
+    - sed -i -e "s/gitlab-ci/k8s-gitlab-ci-$CI_JOB_ID/g" group_vars/all.yaml
     - ansible-playbook site.yaml
   after_script:
     - ansible-playbook site.yaml -e state=absent
