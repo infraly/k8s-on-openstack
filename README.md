@@ -20,6 +20,8 @@ Edit custom parameters in `host_vars/localhost.yaml`, defaults are coming from `
   * `key_name`: name of an existing SSH keypair
   * `node_memory`: how many MB of memory should instances have
   * `node_count`: how many instances should we provision
+  * `network`: name of the network to which instances should be connected
+  * `floating_ip_pool`: name of the floating IP pool
 
 Spin up a new cluster:
 

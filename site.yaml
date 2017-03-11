@@ -33,6 +33,9 @@
       image: "{{ image }}"
       key_name: "{{ key_name }}"
       flavor_ram: "{{ node_memory }}"
+      nics:
+        - net-name: "{{ network|default(omit) }}"
+      floating_ip_pools: "{{ floating_ip_pool|default(omit) }}"
       userdata: |
         #cloud-config
         package_upgrade: true
