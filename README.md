@@ -35,6 +35,11 @@ Destroy the cluster:
 $ ansible-playbook site.yaml -e state=absent
 ```
 
+Author
+------
+
+  * François Deppierraz <francois.deppierraz@infraly.ch>
+
 References
 ----------
 
