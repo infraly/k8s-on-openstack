@@ -10,10 +10,15 @@ stages:
 syntax:
   stage: syntax
   script:
-    - pip2 install ansible-lint
     - ansible-playbook --version
     - ansible-playbook --syntax-check site.yaml
+
+lint:
+  state: syntax
+  script:
+    - pip2 install ansible-lint
     - ansible-lint site.yaml
+  allow_failure: true
 
 test:
   stage: test
