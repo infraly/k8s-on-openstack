@@ -18,8 +18,6 @@ lint:
 
 test:
   stage: test
-  variables:
-    CI_JOB_ID: $CI_JOB_ID
   script:
     - printenv
     - mkdir -p ~/.config/openstack
