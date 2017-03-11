@@ -1,7 +1,7 @@
 image: ubuntu:17.04
 
 before_script:
-  - apt -yy update && apt -yy install ansible python-openstackclient python-shade openssh-client
+  - apt -yy update && apt -yy install ansible python-openstackclient python-shade openssh-client python-pip
 
 stages:
   - syntax
@@ -10,8 +10,10 @@ stages:
 syntax:
   stage: syntax
   script:
+    - pip2 install ansible-lint
     - ansible-playbook --version
     - ansible-playbook --syntax-check site.yaml
+    - ansible-lint site.yaml
 
 test:
   stage: test
