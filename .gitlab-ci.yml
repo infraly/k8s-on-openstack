@@ -26,4 +26,5 @@ test:
     - openstack --os-cloud sandbox keypair delete gitlab-ci || true
     - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci
     - ansible-playbook site.yaml
+  after_script:
     - ansible-playbook site.yaml -e state=absent
