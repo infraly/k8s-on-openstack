@@ -26,7 +26,8 @@ test:
     - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
     - openstack --os-cloud sandbox keypair delete gitlab-ci-$CI_BUILD_ID || true
     - openstack --os-cloud sandbox keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci-$CI_BUILD_ID
-    - sed -i -e "s/gitlab-ci/k8s-gitlab-ci-$CI_BUILD_ID/g" group_vars/all.yaml
+    - sed -i -e "s/gitlab-ci/gitlab-ci-$CI_BUILD_ID/g" group_vars/all.yaml
+    - cat group_vars/all.yaml
     - ansible-playbook site.yaml
   after_script:
     - ansible-playbook site.yaml -e state=absent
