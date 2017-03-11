@@ -2,30 +2,34 @@
 - name: Launch k8s nodes
   hosts: localhost
   tasks:
-  - os_client_config:
+  - name: Get cloud configuration
+    os_client_config:
       clouds:
         - "{{ cloud }}"
 
-  # Create security group before instances
-  - os_security_group:
+  - name: Create security group before instances
+    os_security_group:
       cloud: "{{ cloud }}"
       name: "sg-{{ name }}"
       state: present
     when: state == "present"
 
-  - os_security_group_rule:
+  - name: Open security group from anywhere
+    os_security_group_rule:
       cloud: "{{ cloud }}"
       security_group: "sg-{{ name }}"
       remote_ip_prefix: 0.0.0.0/0
     when: state == "present"
 
-  - os_security_group_rule:
+  - name: Open security group from inside the cluster
+    os_security_group_rule:
       cloud: "{{ cloud }}"
       security_group: "sg-{{ name }}"
       remote_group: "sg-{{ name }}"
     when: state == "present"
 
-  - os_server:
+  - name: Create OpenStack instance
+    os_server:
       cloud: "{{ cloud }}"
       security_groups: "sg-{{ name }}"
       state: "{{ state }}"
@@ -42,13 +46,15 @@
     register: "nodes"
     with_sequence: count="{{ node_count }}"
 
-  - os_security_group:
+  - name: Delete security group
+    os_security_group:
       cloud: "{{ cloud }}"
       name: "sg-{{ name }}"
       state: absent
     when: state == "absent"
 
-  - add_host:
+  - name: Update inventory
+    add_host:
       name: "{{ item.server.name }}"
       ansible_ssh_host: "{{ item.server.interface_ip }}"
       ansible_ssh_user: ubuntu
@@ -56,14 +62,16 @@
     with_items: "{{ nodes.results }}"
     when: state == "present"
 
-  - wait_for:
+  - name: Wait during instances boot
+    wait_for:
       host: "{{ item.server.interface_ip }}"
       port: 22
       search_regex: OpenSSH
     with_items: "{{ nodes.results }}"
     when: state == "present"
 
-  - shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
+  - name: Allow SSH keys on first connection
+    shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
     with_items: "{{ nodes.results }}"
     when: state == "present"
 
@@ -72,23 +80,30 @@
   gather_facts: false
 
   pre_tasks:
-    - raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done; sudo apt-get update && sudo apt-get -y install python-simplejson
+    - name: Wait for cloud-init to finish and then install ansible requirements
+      raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done; sudo apt-get update && sudo apt-get -y install python-simplejson
+      tags:
+        - skip_ansible_lint
 
-    - action: setup
+    - name: Setup
+      action: setup
 
 - name: Install repo and packages
   hosts: nodes
   become: true
   tasks:
-    - apt_key:
+    - name: Install k8s APT repo GPG key
+      apt_key:
         url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
         state: present
 
-    - apt_repository:
+    - name: Setup k8s APT repo
+      apt_repository:
         repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
         state: present
 
-    - apt:
+    - name: Install docker and kubernetes packages
+      apt:
         name: "{{item}}"
         state: installed
         update_cache: yes
@@ -108,17 +123,20 @@
       when: hostvars[item].ansible_hostname is defined
       with_items: "{{groups['all'] | default([])}}"
 
-    - template:
+    - name: Create OpenStack cloud configuration
+      template:
         src: files/cloud-config.j2
         dest: /etc/kubernetes/cloud-config
         mode: 0600
 
-    - copy:
+    - name: Override default kubeadm configuration to use the OpenStack cloud configuration
+      copy:
         src: files/10-kubeadm.conf
         dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
         mode: 0600
 
-    - systemd:
+    - name: Restart kubelet
+      systemd:
         state: restarted
         daemon_reload: yes
         name: kubelet
@@ -163,18 +181,22 @@
 - name: Health check
   hosts: nodes
   tasks:
-    - shell: "kubectl get nodes"
+    - name: Get nodes
+      command: kubectl get nodes
       when: inventory_hostname == groups.nodes[0]
       register: nodes
 
-    - debug:
+    - name: Display nodes
+      debug:
         var: nodes.stdout_lines
       when: inventory_hostname == groups.nodes[0]
 
-    - shell: "kubectl cluster-info"
+    - name: Get cluster info
+      command: kubectl cluster-info
       when: inventory_hostname == groups.nodes[0]
       register: clusterinfo
 
-    - debug:
+    - name: Display cluster info
+      debug:
         var: clusterinfo.stdout_lines
       when: inventory_hostname == groups.nodes[0]
