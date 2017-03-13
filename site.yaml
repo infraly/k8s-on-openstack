@@ -201,7 +201,7 @@
   hosts: nodes
   tasks:
     - name: Wait for nodes registration
-      shell: "/usr/bin/test $(kubectl get nodes -o name | wc -l) == {{ node_count }}"
+      shell: "/usr/bin/test $(kubectl get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
       register: nodes_status
       retries: 30
       delay: 10
