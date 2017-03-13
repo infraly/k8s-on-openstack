@@ -77,6 +77,8 @@
 
 - name: Node preparation
   hosts: nodes
+  tags:
+    - bootstrap
   gather_facts: false
 
   pre_tasks:
@@ -96,6 +98,8 @@
 
 - name: Install repo and packages
   hosts: nodes
+  tags:
+    - bootstrap
   become: true
   tasks:
     - name: Install k8s APT repo GPG key
@@ -152,6 +156,8 @@
 
 - name: k8s master setup
   hosts: nodes[0]
+  tags:
+    - bootstrap
   become: true
   tasks:
     - name: Check for existing kubelet configuration
@@ -181,6 +187,8 @@
 
 - name: k8s minions setup
   hosts: nodes[1:]
+  tags:
+    - bootstrap
   become: true
   tasks:
     - name: kubeadm join
@@ -189,7 +197,10 @@
         creates: /etc/kubernetes/kubelet.conf
 
 - name: k8s addons
+
   hosts: nodes[0]
+  tags:
+    - bootstrap
   tasks:
     - name: kubectl apply weave
       command: kubectl apply -f https://git.io/weave-kube
