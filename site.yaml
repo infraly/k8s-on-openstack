@@ -195,8 +195,10 @@
   tasks:
     - name: Wait for nodes registration
       shell: "/usr/bin/test $(kubectl get nodes -o name | wc -l) == {{ node_count }}"
+      register: nodes_status
       retries: 30
       delay: 10
+      until: nodes_status | success
       when: inventory_hostname == groups.nodes[0]
 
     - name: Get nodes
