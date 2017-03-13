@@ -217,24 +217,19 @@
       retries: 30
       delay: 10
       until: nodes_status | success
-      when: inventory_hostname == groups.nodes[0]
 
     - name: Get nodes
       command: kubectl get nodes
-      when: inventory_hostname == groups.nodes[0]
       register: nodes
 
     - name: Display nodes
       debug:
         var: nodes.stdout_lines
-      when: inventory_hostname == groups.nodes[0]
 
     - name: Get cluster info
       command: kubectl cluster-info
-      when: inventory_hostname == groups.nodes[0]
       register: clusterinfo
 
     - name: Display cluster info
       debug:
         var: clusterinfo.stdout_lines
-      when: inventory_hostname == groups.nodes[0]
