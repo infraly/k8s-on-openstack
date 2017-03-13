@@ -134,27 +134,39 @@
         src: files/10-kubeadm.conf
         dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
         mode: 0600
+      register: kubelet_service
 
     - name: Restart kubelet
       systemd:
         state: restarted
         daemon_reload: yes
         name: kubelet
+      when: kubelet_service.changed
 
 - name: k8s cluster setup
   hosts: nodes
   become: true
   tasks:
     # Master
+    - name: Check for existing kubelet configuration
+      stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kubelet_conf
+
     - name: kubeadm token generate
       command: kubeadm token generate
-      register: token
-      when: inventory_hostname == groups.nodes[0]
+      register: token1
+      when: inventory_hostname == groups.nodes[0] and kubelet_conf.stat.exists == False
 
-#    - name: kubeadm get existing token
-#      command: sh -c '/usr/bin/kubectl -n kube-system get secret clusterinfo -o yaml | grep token-map | awk "{print \$2}" | base64 -d | sed "s|{||g;s|}||g;s|:|.|g;s/\"//g;" | xargs echo'
-#      register: token
-#      when: inventory_hostname == groups.nodes[0]
+    - name: kubeadm get existing token
+      command: sh -c '/usr/bin/kubectl -n kube-system get secret clusterinfo -o yaml | grep token-map | awk "{print \$2}" | base64 -d | sed "s|{||g;s|}||g;s|:|.|g;s/\"//g;" | xargs echo'
+      register: token2
+      when: inventory_hostname == groups.nodes[0] and kubelet_conf.stat.exists == True
+
+    # https://github.com/ansible/ansible/issues/4297
+    - name: token
+      set_fact:
+        token: "{{ token1 if inventory_hostname == groups.nodes[0] and kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
       command: "kubeadm init --cloud-provider openstack --token {{ token.stdout }}"
@@ -164,7 +176,7 @@
 
     # Minions
     - name: kubeadm join
-      command: "kubeadm join --token {{ hostvars[groups['nodes'][0]]['token'].stdout }} {{ hostvars[groups.nodes[0]]['ansible_default_ipv4']['address'] }}"
+      command: "kubeadm join --skip-preflight-checks --token {{ hostvars[groups['nodes'][0]]['token'].stdout }} {{ hostvars[groups.nodes[0]]['ansible_default_ipv4']['address'] }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
       when: inventory_hostname != groups.nodes[0]
