@@ -138,14 +138,15 @@
         src: files/10-kubeadm.conf
         dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
         mode: 0600
-      register: kubelet_service
+      notify:
+        - Restart kubelet
 
+  handlers:
     - name: Restart kubelet
       systemd:
         state: restarted
         daemon_reload: yes
         name: kubelet
-      when: kubelet_service.changed
 
 - name: k8s cluster setup
   hosts: nodes
