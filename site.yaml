@@ -233,3 +233,27 @@
     - name: Display cluster info
       debug:
         var: clusterinfo.stdout_lines
+
+    - name: Slurp kubectl configuration
+      become: true
+      slurp:
+        src: /etc/kubernetes/admin.conf
+      register: kubectl_admin
+
+    - name: Save kubectl configuration in a fact
+      set_fact:
+        kubectl: "{{ kubectl_admin['content'] | b64decode | from_yaml }}"
+
+- name: Local kubectl configuration
+  hosts: localhost
+  tasks:
+    - name: Parse kubectl configuration
+      set_fact:
+        kubectl: "{{ hostvars[groups['nodes'][0]]['kubectl'] }}"
+
+    - name: debug
+      debug:
+        var: kubectl
+
+    # - name: Create cluster entry
+    #   command: "kubectl config set-cluster {{ name }} --server={{ kubectl['clusters'][0]['cluster']['server'] }} --certificate-authority-data={{ kubectl['clusters'][0]['cluster']['certificate-authority-data'] }} --embed-certs=true"
