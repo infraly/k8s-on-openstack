@@ -88,6 +88,8 @@
     # http://stackoverflow.com/questions/32429259/ansible-fails-with-bin-sh-1-usr-bin-python-not-found
     - name: install ansible requirements
       raw: /usr/bin/test -f /usr/bin/python || sudo apt-get update && sudo apt-get -y install python-simplejson
+      tags:
+        - skip_ansible_lint
 
     - name: Setup
       action: setup
