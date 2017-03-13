@@ -80,10 +80,14 @@
   gather_facts: false
 
   pre_tasks:
-    - name: Wait for cloud-init to finish and then install ansible requirements
-      raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done; sudo apt-get update && sudo apt-get -y install python-simplejson
+    - name: Wait for cloud-init to finish
+      raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done
       tags:
         - skip_ansible_lint
+
+    # http://stackoverflow.com/questions/32429259/ansible-fails-with-bin-sh-1-usr-bin-python-not-found
+    - name: install ansible requirements
+      raw: /usr/bin/test -f /usr/bin/python || sudo apt-get update && sudo apt-get -y install python-simplejson
 
     - name: Setup
       action: setup
