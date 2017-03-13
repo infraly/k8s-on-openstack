@@ -193,6 +193,12 @@
 - name: Health check
   hosts: nodes
   tasks:
+    - name: Wait for nodes registration
+      shell: "/usr/bin/test $(kubectl get nodes -o name | wc -l) == {{ node_count }}"
+      retries: 30
+      delay: 10
+      when: inventory_hostname == groups.nodes[0]
+
     - name: Get nodes
       command: kubectl get nodes
       when: inventory_hostname == groups.nodes[0]
