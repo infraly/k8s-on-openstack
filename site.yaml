@@ -3,11 +3,13 @@
   hosts: localhost
   tasks:
   - name: Get cloud configuration
+    tags: bootstrap
     os_client_config:
       clouds:
         - "{{ cloud }}"
 
   - name: Create security group before instances
+    tags: bootstrap
     os_security_group:
       cloud: "{{ cloud }}"
       name: "sg-{{ name }}"
@@ -15,6 +17,7 @@
     when: state == "present"
 
   - name: Open security group from anywhere
+    tags: bootstrap
     os_security_group_rule:
       cloud: "{{ cloud }}"
       security_group: "sg-{{ name }}"
@@ -22,6 +25,7 @@
     when: state == "present"
 
   - name: Open security group from inside the cluster
+    tags: bootstrap
     os_security_group_rule:
       cloud: "{{ cloud }}"
       security_group: "sg-{{ name }}"
@@ -47,6 +51,7 @@
     with_sequence: count="{{ node_count }}"
 
   - name: Delete security group
+    tags: bootstrap
     os_security_group:
       cloud: "{{ cloud }}"
       name: "sg-{{ name }}"
@@ -63,6 +68,7 @@
     when: state == "present"
 
   - name: Wait during instances boot
+    tags: bootstrap
     wait_for:
       host: "{{ item.server.interface_ip }}"
       port: 22
