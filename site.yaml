@@ -255,5 +255,19 @@
       debug:
         var: kubectl
 
-    # - name: Create cluster entry
-    #   command: "kubectl config set-cluster {{ name }} --server={{ kubectl['clusters'][0]['cluster']['server'] }} --certificate-authority-data={{ kubectl['clusters'][0]['cluster']['certificate-authority-data'] }} --embed-certs=true"
+    - name: Create cluster entry
+      shell: "bash -c 'kubectl config set-cluster {{ name }} \
+              --server={{ kubectl['clusters'][0]['cluster']['server'] }} \
+              --certificate-authority=<(echo {{ kubectl['clusters'][0]['cluster']['certificate-authority-data'] }}) \
+              --embed-certs=true'"
+
+    - name: Create user entry
+      shell: "bash -c 'kubectl config set-credentials {{ name }}-admin \
+              --client-certificate=<(echo {{ kubectl['users'][0]['user']['client-certificate-data'] }}) \
+              --client-key=<(echo {{ kubectl['users'][0]['user']['client-key-data'] }}) \
+              --embed-certs=true'"
+
+    - name: Create context entry
+      shell: "bash -c 'kubectl config set-context {{ name }} \
+              --cluster={{ name }} \
+              --user=admin@{{ name }}'"
