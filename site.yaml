@@ -298,6 +298,7 @@
       file:
         path: "{{ tempfile.stdout }}"
         state: absent
+      when: state == "present"
 
     - name: Create context entry
       shell: "bash -c 'kubectl config set-context {{ name }} \
