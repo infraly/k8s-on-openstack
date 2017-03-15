@@ -295,8 +295,9 @@
       when: state == "present"
 
     - name: Delete temp file
-      command: "rm {{ tempfile.stdout }}"
-      when: state == "present"
+      file:
+        path: "{{ tempfile.stdout }}"
+        state: absent
 
     - name: Create context entry
       shell: "bash -c 'kubectl config set-context {{ name }} \
