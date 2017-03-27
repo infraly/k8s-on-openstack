@@ -187,7 +187,7 @@
         token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
-      command: "kubeadm init --cloud-provider openstack --token {{ token.stdout }} --use-kubernetes-version {{ version }}"
+      command: "kubeadm init --skip-preflight-checks --cloud-provider openstack --token {{ token.stdout }} --use-kubernetes-version {{ version }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
