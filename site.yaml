@@ -187,7 +187,7 @@
         token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
-      command: "kubeadm init --cloud-provider openstack --token {{ token.stdout }}"
+      command: "kubeadm init --cloud-provider openstack --token {{ token.stdout }} --use-kubernetes-version {{ version }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
@@ -312,6 +312,16 @@
       when: state == "present"
 
     - name: Display kubectl test results
+      debug:
+        var: result.stdout_lines
+      when: state == "present"
+
+    - name: Get kubectl version
+      shell: "kubectl --context={{ name }} version"
+      register: result
+      when: state == "present"
+
+    - name: Display kubectl version
       debug:
         var: result.stdout_lines
       when: state == "present"
