@@ -187,7 +187,7 @@
         token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
-      command: "kubeadm init --skip-preflight-checks --cloud-provider openstack --token {{ token.stdout }} --use-kubernetes-version {{ version }} --api-advertise-addresses {{ hostvars[groups.nodes[0]]['openstack']['public_v4'] }}"
+      command: "kubeadm init --skip-preflight-checks --cloud-provider openstack --token {{ token.stdout }} --use-kubernetes-version {{ version }} --api-advertise-addresses {{ hostvars[groups.nodes[0]].ansible_default_ipv4.address }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
