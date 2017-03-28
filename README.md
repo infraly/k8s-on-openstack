@@ -1,7 +1,7 @@
 k8s-on-openstack
 ================
 
-An opiniated way to deploy a Kubernetes cluster on top of an OpenStack cloud.
+An opinionated way to deploy a Kubernetes cluster on top of an OpenStack cloud.
 
 It is based on the following tools:
 
