@@ -6,4 +6,4 @@ node_memory: 4096 # MB
 node_count: 3
 state: present
 network: public
-version: v1.5.5
+version: v1.6.0
