@@ -118,6 +118,7 @@
         repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
         state: present
 
+    # Workaround for https://github.com/kubernetes/kubeadm/issues/212
     - name: Install docker and kubernetes packages
       apt:
         name: "{{item}}"
@@ -125,9 +126,9 @@
         update_cache: yes
       with_items:
         - docker.io
-        - kubelet
-        - kubeadm
-        - kubectl
+        - kubelet=1.5.6-00
+        - kubeadm=1.5.6-00
+        - kubectl=1.5.6-00
         - kubernetes-cni
 
     - name: add hosts
