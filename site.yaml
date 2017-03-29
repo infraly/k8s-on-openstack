@@ -32,6 +32,15 @@
       remote_group: "sg-{{ name }}"
     when: state == "present"
 
+  - name: Create anti-affinity server group
+    tags: bootstrap
+    os_server_group:
+      cloud: "{{ cloud }}"
+      name: "anti-affinity-{{ name }}"
+      policies:
+        - anti-affinity
+    when: state == "present"
+
   - name: Create OpenStack instance
     os_server:
       cloud: "{{ cloud }}"
@@ -47,6 +56,8 @@
       userdata: |
         #cloud-config
         package_upgrade: true
+      scheduler_hints:
+        group: "anti-affinity-{{ name }}"
     register: "nodes"
     with_sequence: count="{{ node_count }}"
 
@@ -55,6 +66,14 @@
     os_security_group:
       cloud: "{{ cloud }}"
       name: "sg-{{ name }}"
+      state: absent
+    when: state == "absent"
+
+  - name: Delete anti-affinity server group
+    tags: bootstrap
+    os_server_group:
+      cloud: "{{ cloud }}"
+      name: "anti-affinity-{{ name }}"
       state: absent
     when: state == "absent"
 
