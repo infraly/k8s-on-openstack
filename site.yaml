@@ -126,9 +126,9 @@
         update_cache: yes
       with_items:
         - docker.io
-        - kubelet=1.5.6-00
-        - kubeadm=1.5.6-00
-        - kubectl=1.5.6-00
+        - kubelet
+        - kubeadm
+        - kubectl
         - kubernetes-cni
 
     - name: add hosts
@@ -149,7 +149,7 @@
     - name: Override default kubeadm configuration to use the OpenStack cloud configuration
       copy:
         src: files/10-kubeadm.conf
-        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.hack
         mode: 0600
       notify:
         - Restart kubelet
@@ -192,6 +192,23 @@
       args:
         creates: /etc/kubernetes/kubelet.conf
 
+- name: revert kubelet config
+  hosts: nodes
+  tasks:
+    - name: Override default kubeadm configuration to use the OpenStack cloud configuration
+      copy:
+        src: files/10-kubeadm.conf
+        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+        mode: 0600
+      notify:
+        - Restart kubelet
+  handlers:
+    - name: Restart kubelet
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: kubelet
+
 - name: k8s minions setup
   hosts: nodes[1:]
   tags:
@@ -210,7 +227,7 @@
     - bootstrap
   tasks:
     - name: kubectl apply weave
-      command: kubectl apply -f https://git.io/weave-kube
+      command: kubectl apply -f https://git.io/weave-kube-1.6
 
     - name: kubectl apply dashboard
       command: kubectl apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
