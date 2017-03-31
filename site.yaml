@@ -208,6 +208,7 @@
   hosts: nodes[0]
   tags:
     - bootstrap
+  become: true
   tasks:
     - name: kubectl apply weave
       command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://git.io/weave-kube-1.6
@@ -217,6 +218,7 @@
 
 - name: Health check
   hosts: nodes[0]
+  become: true
   tasks:
     - name: Wait for nodes registration
       shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
@@ -242,7 +244,6 @@
         var: clusterinfo.stdout_lines
 
     - name: Slurp kubectl configuration
-      become: true
       slurp:
         src: /etc/kubernetes/admin.conf
       register: kubectl_admin
