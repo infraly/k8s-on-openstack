@@ -149,7 +149,7 @@
     - name: Override default kubeadm configuration to use the OpenStack cloud configuration
       copy:
         src: files/10-kubeadm.conf
-        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf.hack
+        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
         mode: 0600
       notify:
         - Restart kubelet
@@ -190,24 +190,7 @@
     - name: kubeadm init
       command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version {{ version }} --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
       args:
-        creates: /etc/kubernetes/kubelet.conf
-
-- name: revert kubelet config
-  hosts: nodes
-  tasks:
-    - name: Override default kubeadm configuration to use the OpenStack cloud configuration
-      copy:
-        src: files/10-kubeadm.conf
-        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-        mode: 0600
-      notify:
-        - Restart kubelet
-  handlers:
-    - name: Restart kubelet
-      systemd:
-        state: restarted
-        daemon_reload: yes
-        name: kubelet
+        creates: /etc/kubernetes/kubelet.con
 
 - name: k8s minions setup
   hosts: nodes[1:]
