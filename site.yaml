@@ -47,7 +47,6 @@
       userdata: |
         #cloud-config
         package_upgrade: true
-      wait: false
     register: "nodes"
     with_sequence: count="{{ node_count }}"
 
