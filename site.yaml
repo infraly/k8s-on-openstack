@@ -210,23 +210,23 @@
     - bootstrap
   tasks:
     - name: kubectl apply weave
-      command: kubectl apply -f https://git.io/weave-kube-1.6
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://git.io/weave-kube-1.6
 
     - name: kubectl apply dashboard
-      command: kubectl apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
 
 - name: Health check
   hosts: nodes[0]
   tasks:
     - name: Wait for nodes registration
-      shell: "/usr/bin/test $(kubectl get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
+      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
       register: nodes_status
       retries: 30
       delay: 10
       until: nodes_status | success
 
     - name: Get nodes
-      command: kubectl get nodes
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes
       register: nodes
 
     - name: Display nodes
@@ -234,7 +234,7 @@
         var: nodes.stdout_lines
 
     - name: Get cluster info
-      command: kubectl cluster-info
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf cluster-info
       register: clusterinfo
 
     - name: Display cluster info
