@@ -118,18 +118,17 @@
         repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
         state: present
 
-    # Workaround for https://github.com/kubernetes/kubeadm/issues/212
     - name: Install docker and kubernetes packages
       apt:
         name: "{{item}}"
         state: installed
         update_cache: yes
       with_items:
-        - docker.io
-        - kubelet=1.5.6-00
-        - kubeadm=1.5.6-00
-        - kubectl=1.5.6-00
-        - kubernetes-cni
+        - docker.io=1.12.6-0ubuntu1~16.04.1
+        - kubelet=1.6.1-00
+        - kubeadm=1.6.1-00
+        - kubectl=1.6.1-00
+        - kubernetes-cni=0.5.1-00
 
     - name: add hosts
       lineinfile:
@@ -178,7 +177,7 @@
       when: kubelet_conf.stat.exists == False
 
     - name: kubeadm get existing token
-      command: sh -c '/usr/bin/kubectl -n kube-system get secret clusterinfo -o yaml | grep token-map | awk "{print \$2}" | base64 -d | sed "s|{||g;s|}||g;s|:|.|g;s/\"//g;" | xargs echo'
+      command: sh -c "kubeadm token list | awk '/The default bootstrap token/ { print $1; }'"
       register: token2
       when: kubelet_conf.stat.exists == True
 
@@ -188,7 +187,7 @@
         token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
-      command: "kubeadm init --skip-preflight-checks --cloud-provider openstack --token {{ token.stdout }} --use-kubernetes-version {{ version }} --api-advertise-addresses {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
+      command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version {{ version }} --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
@@ -199,7 +198,7 @@
   become: true
   tasks:
     - name: kubeadm join
-      command: "kubeadm join --skip-preflight-checks --token {{ hostvars[groups['nodes'][0]]['token'].stdout }} {{ hostvars[groups.nodes[0]]['ansible_default_ipv4']['address'] }}"
+      command: "kubeadm join --skip-preflight-checks --token {{ hostvars[groups['nodes'][0]]['token'].stdout }} {{ hostvars[groups.nodes[0]]['ansible_default_ipv4']['address'] }}:6443"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
@@ -208,25 +207,27 @@
   hosts: nodes[0]
   tags:
     - bootstrap
+  become: true
   tasks:
     - name: kubectl apply weave
-      command: kubectl apply -f https://git.io/weave-kube
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://git.io/weave-kube-1.6
 
     - name: kubectl apply dashboard
-      command: kubectl apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
 
 - name: Health check
   hosts: nodes[0]
+  become: true
   tasks:
     - name: Wait for nodes registration
-      shell: "/usr/bin/test $(kubectl get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
+      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
       register: nodes_status
       retries: 30
       delay: 10
       until: nodes_status | success
 
     - name: Get nodes
-      command: kubectl get nodes
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes
       register: nodes
 
     - name: Display nodes
@@ -234,7 +235,7 @@
         var: nodes.stdout_lines
 
     - name: Get cluster info
-      command: kubectl cluster-info
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf cluster-info
       register: clusterinfo
 
     - name: Display cluster info
@@ -242,7 +243,6 @@
         var: clusterinfo.stdout_lines
 
     - name: Slurp kubectl configuration
-      become: true
       slurp:
         src: /etc/kubernetes/admin.conf
       register: kubectl_admin
