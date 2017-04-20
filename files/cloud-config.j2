@@ -10,5 +10,5 @@ region = {{ hostvars['localhost'].openstack.clouds[0].region_name }}
 domain-name = {{ hostvars['localhost'].openstack.clouds[0].auth.user_domain_name }}
 {% endif %}
 
-#[LoadBalancer]
-#subnet-id = a7d3955a-0a10-4647-b090-6fcde70c1d77
+[BlockStorage]
+trust-device-path = false
