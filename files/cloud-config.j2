@@ -1,13 +1,13 @@
 [Global]
-auth-url = {{ hostvars['localhost'].openstack.clouds[0].auth.auth_url }}
-username = {{ hostvars['localhost'].openstack.clouds[0].auth.username }}
-password = {{ hostvars['localhost'].openstack.clouds[0].auth.password }}
-tenant-name = {{ hostvars['localhost'].openstack.clouds[0].auth.project_name }}
-{% if hostvars['localhost'].openstack.clouds[0].region_name is defined %}
-region = {{ hostvars['localhost'].openstack.clouds[0].region_name }}
+auth-url = {{ lookup('env', 'OS_AUTH_URL') }}
+username = {{ lookup('env', 'OS_USERNAME') }}
+password = {{ lookup('env', 'OS_PASSWORD') }}
+tenant-name = {{ lookup('env', 'OS_PROJECT_NAME') }}
+{% if lookup('env', 'OS_REGION_NAME') != '' %}
+region = {{ lookup('env', 'OS_REGION_NAME') }}
 {% endif %}
-{% if hostvars['localhost'].openstack.clouds[0].auth.user_domain_name is defined %}
-domain-name = {{ hostvars['localhost'].openstack.clouds[0].auth.user_domain_name }}
+{% if lookup('env', 'OS_USER_DOMAIN_NAME') != '' %}
+domain-name = {{ lookup('env', 'OS_USER_DOMAIN_NAME') }}
 {% endif %}
 
 [BlockStorage]
