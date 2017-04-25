@@ -2,6 +2,12 @@
 - name: Launch k8s nodes
   hosts: localhost
   tasks:
+  - name: Set variables
+    set_fact:
+      name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+      state: "{{ lookup('env','STATE') | default('present', true) }}"
+      node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
+
   - name: Get cloud configuration
     tags: bootstrap
     os_client_config:
@@ -32,17 +38,17 @@
       security_groups: "sg-{{ name }}"
       state: "{{ state }}"
       name: "{{ name }}-{{ item }}"
-      image: "{{ image }}"
-      key_name: "{{ key_name }}"
-      flavor_ram: "{{ node_memory }}"
+      image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+      key_name: "{{ lookup('env','KEY') }}"
+      flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
       nics:
-        - net-name: "{{ network|default(omit) }}"
-      floating_ip_pools: "{{ floating_ip_pool|default(omit) }}"
+        - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
+      floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
       userdata: |
         #cloud-config
         package_upgrade: true
     register: "nodes"
-    with_sequence: count="{{ node_count }}"
+    with_sequence: count={{ node_count }}
 
   - name: Delete security group
     tags: bootstrap
@@ -180,7 +186,7 @@
         token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
-      command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version {{ version }} --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
+      command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.6.1 --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
@@ -304,6 +310,14 @@
       shell: "bash -c 'kubectl config set-context {{ name }} \
               --cluster={{ name }} \
               --user=admin@{{ name }}'"
+      when: state == "present"
+
+    - name: Wait for all nodes to join the cluster
+      shell: "kubectl --context={{ name }} get nodes -o jsonpath='{.items[*].status.conditions[-1:].type}' | grep -o 'Ready' | wc -l"
+      register: node_count_ready
+      until: "{{ node_count_ready.stdout | int }} == {{ node_count | int }}"
+      retries: 10
+      delay: 30
       when: state == "present"
 
     - name: Test kubectl configuration
