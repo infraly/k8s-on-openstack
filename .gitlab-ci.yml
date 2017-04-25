@@ -3,6 +3,7 @@ image: gitlab.infraly.ch:4567/francois/docker-ansible:master
 stages:
   - syntax
   - test
+  - staging
 
 syntax:
   stage: syntax
@@ -30,3 +31,14 @@ test:
   after_script:
     - STATE=absent ansible-playbook site.yaml || true
     - openstack keypair delete gitlab-ci-$CI_BUILD_ID || true
+
+staging:
+  stage: staging
+  variables:
+    NAME: k8s-staging
+    KEY: k8s-staging
+  script:
+    - mkdir -p ~/.ssh && echo $STAGING_SSH_KEY | base64 -d > ~/.ssh/id_rsa
+    - ansible-playbook site.yaml
+  only:
+    - master
