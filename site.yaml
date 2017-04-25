@@ -225,7 +225,7 @@
   become: true
   tasks:
     - name: Wait for nodes registration
-      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o name | wc -l) == {{ groups['nodes'] | length }}"
+      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o jsonpath='{.items[*].status.conditions[-1:].type}' | grep -o Ready | wc -l) == {{ groups['nodes'] | length }}"
       register: nodes_status
       retries: 30
       delay: 10
@@ -310,14 +310,6 @@
       shell: "bash -c 'kubectl config set-context {{ name }} \
               --cluster={{ name }} \
               --user=admin@{{ name }}'"
-      when: state == "present"
-
-    - name: Wait for all nodes to join the cluster
-      shell: "kubectl --context={{ name }} get nodes -o jsonpath='{.items[*].status.conditions[-1:].type}' | grep -o 'Ready' | wc -l"
-      register: node_count_ready
-      until: "{{ node_count_ready.stdout | int }} == {{ node_count | int }}"
-      retries: 10
-      delay: 30
       when: state == "present"
 
     - name: Test kubectl configuration
