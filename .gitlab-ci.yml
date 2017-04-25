@@ -28,3 +28,4 @@ test:
     - ansible-playbook site.yaml
   after_script:
     - ansible-playbook site.yaml -e state=absent
+    - openstack keypair delete gitlab-ci-$CI_BUILD_ID
