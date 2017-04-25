@@ -35,6 +35,15 @@ Destroy the cluster:
 $ ansible-playbook site.yaml -e state=absent
 ```
 
+CI/CD
+-----
+
+The following environment variables needs to be defined:
+
+  * `OS_AUTH_URL`
+  * `OS_PASSWORD`
+  * `OS_USERNAME`
+
 Author
 ------
 
