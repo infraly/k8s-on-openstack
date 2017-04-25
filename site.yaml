@@ -225,7 +225,7 @@
   become: true
   tasks:
     - name: Wait for nodes registration
-      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o jsonpath='{.items[*].status.conditions[-1:].type}' | grep -o Ready | wc -l) == {{ groups['nodes'] | length }}"
+      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes -o jsonpath='{.items[*].status.conditions[-1:].type}' | grep -v NotReady | grep -o Ready | wc -l) == {{ groups['nodes'] | length }}"
       register: nodes_status
       retries: 30
       delay: 10
