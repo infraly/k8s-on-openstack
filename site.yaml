@@ -231,6 +231,14 @@
       delay: 10
       until: nodes_status | success
 
+    - name: Get event log
+      command: kubectl --kubeconfig /etc/kubernetes/admin.conf get events --all-namespaces
+      register: events
+
+    - name: Display events
+      debug:
+        var: events.stdout_lines
+
     - name: Get nodes
       command: kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes
       register: nodes
