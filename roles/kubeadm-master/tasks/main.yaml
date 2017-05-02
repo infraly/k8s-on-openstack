@@ -1,0 +1,49 @@
+- name: Check for existing kubelet configuration
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubelet_conf
+
+- name: kubeadm token generate
+  command: kubeadm token generate
+  register: token1
+  when: kubelet_conf.stat.exists == False
+
+- name: kubeadm get existing token
+  command: sh -c "kubeadm token list | awk '/The default bootstrap token/ { print $1; }'"
+  register: token2
+  when: kubelet_conf.stat.exists == True
+
+# https://github.com/ansible/ansible/issues/4297
+- name: token
+  set_fact:
+    token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
+
+- name: kubeadm init
+  command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.6.2 --apiserver-advertise-address {{ hostvars[groups.master[0]].ansible_ssh_host }}"
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+
+- name: Configure kube-controller-manager cloud provider integration
+  blockinfile:
+    dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    insertbefore: 'image: '
+    block: "    - --cloud-provider=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
+
+- name: Ensure kubectl configuration directory is present
+  become: True
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: 0700
+
+- name: Copy kubectl configuration for the default user
+  become: True
+  copy:
+    remote_src: True
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
+    group: ubuntu
+    mode: 0600
