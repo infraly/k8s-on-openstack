@@ -25,6 +25,7 @@ test:
   script:
     - mkdir -p ~/.ssh
     - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
+    - cat ~/.ssh/id_rsa
     - openstack keypair create --public-key ~/.ssh/id_rsa.pub gitlab-ci-$CI_BUILD_ID
     - ansible-playbook site.yaml
   after_script:
