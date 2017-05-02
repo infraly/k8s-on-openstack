@@ -1,8 +1,14 @@
 ---
 - name: Launch k8s nodes
   hosts: localhost
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        state: "{{ lookup('env','STATE') | default('present', true) }}"
+        node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
   roles:
-    - openstack-security-groups
+    - { role: openstack-security-groups, when: state == 'present' }
     - openstack-master
     - openstack-nodes
     - openstack-security-groups # HACK: needs to be called after instance creation when state==absent

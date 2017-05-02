@@ -1,8 +1,3 @@
-- name: Set variables
-  set_fact:
-    name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-    state: "{{ lookup('env','STATE') | default('present', true) }}"
-
 - name: Create master security group
   tags: bootstrap
   os_security_group:
