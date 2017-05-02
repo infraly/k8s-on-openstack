@@ -1,5 +1,5 @@
 - name: Wait for nodes registration
-  shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes | grep -ow Ready | wc -l) == {{ groups['nodes'] | length }}"
+  shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes | grep -ow Ready | wc -l) == {{ groups['nodes'] | length + groups['master'] | length }}"
   register: nodes_status
   retries: 30
   delay: 10

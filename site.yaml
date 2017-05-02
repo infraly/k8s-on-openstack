@@ -2,10 +2,13 @@
 - name: Launch k8s nodes
   hosts: localhost
   roles:
-    - instances
+    - openstack-security-groups
+    - openstack-master
+    - openstack-nodes
+    - openstack-security-groups # HACK: needs to be called after instance creation when state==absent
 
 - name: Node preparation
-  hosts: nodes
+  hosts: all
   tags:
     - bootstrap
   gather_facts: false
@@ -13,7 +16,7 @@
     - common
 
 - name: Install repo and packages
-  hosts: nodes
+  hosts: all
   tags:
     - bootstrap
   become: true
@@ -21,15 +24,15 @@
     - kubeadm
 
 - name: k8s master setup
-  hosts: nodes[0]
+  hosts: master
   tags:
     - bootstrap
   become: true
   roles:
     - kubeadm-master
 
-- name: k8s minions setup
-  hosts: nodes[1:]
+- name: k8s nodes setup
+  hosts: nodes
   become: true
   tags:
     - bootstrap
@@ -37,7 +40,7 @@
     - kubeadm-nodes
 
 - name: k8s addons
-  hosts: nodes[0]
+  hosts: master
   tags:
     - bootstrap
   become: true
@@ -45,7 +48,7 @@
     - k8s-addons
 
 - name: Health check
-  hosts: nodes[0]
+  hosts: master
   become: true
   roles:
     - healthcheck
