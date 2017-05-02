@@ -28,3 +28,22 @@
     dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
     insertbefore: 'image: '
     block: "    - --cloud-provider=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
+
+- name: Ensure kubectl configuration directory is present
+  become: True
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: 0700
+
+- name: Copy kubectl configuration for the default user
+  become: True
+  copy:
+    remote_src: True
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
+    group: ubuntu
+    mode: 0600

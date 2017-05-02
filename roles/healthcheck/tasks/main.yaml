@@ -1,5 +1,5 @@
 - name: Wait for nodes registration
-  shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes | grep -ow Ready | wc -l) == {{ groups['nodes'] | length + groups['master'] | length }}"
+  shell: "/usr/bin/test $(kubectl get nodes | grep -ow Ready | wc -l) == {{ groups['nodes'] | length + groups['master'] | length }}"
   register: nodes_status
   retries: 30
   delay: 10
@@ -7,7 +7,7 @@
   ignore_errors: yes
 
 - name: Get event log
-  command: kubectl --kubeconfig /etc/kubernetes/admin.conf get events --all-namespaces
+  command: kubectl get events --all-namespaces
   register: events
 
 - name: Display events
@@ -15,7 +15,7 @@
     var: events.stdout_lines
 
 - name: Get nodes
-  command: kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes
+  command: kubectl get nodes
   register: nodes
 
 - name: Display nodes
@@ -23,7 +23,7 @@
     var: nodes.stdout_lines
 
 - name: Get cluster info
-  command: kubectl --kubeconfig /etc/kubernetes/admin.conf cluster-info
+  command: kubectl cluster-info
   register: clusterinfo
 
 - name: Display cluster info

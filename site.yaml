@@ -49,13 +49,11 @@
   hosts: master
   tags:
     - bootstrap
-  become: true
   roles:
     - k8s-addons
 
 - name: Health check
   hosts: master
-  become: true
   roles:
     - healthcheck
 
