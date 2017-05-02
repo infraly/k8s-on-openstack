@@ -1,6 +1,6 @@
 - name: Retrieve kubectl configuration
   fetch:
-    src: /etc/kubernetes/admin.configuration
-    dest: "{{ name }}.conf"
+    src: /etc/kubernetes/admin.conf
+    dest: admin.conf
     flat: yes
   when: state == 'present'
