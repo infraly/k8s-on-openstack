@@ -1,105 +1,16 @@
 ---
 - name: Launch k8s nodes
   hosts: localhost
-  tasks:
-  - name: Set variables
-    set_fact:
-      name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-      state: "{{ lookup('env','STATE') | default('present', true) }}"
-      node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
-
-  - name: Get cloud configuration
-    tags: bootstrap
-    os_client_config:
-
-  - name: Create security group before instances
-    tags: bootstrap
-    os_security_group:
-      name: "sg-{{ name }}"
-      state: present
-    when: state == "present"
-
-  - name: Open security group from anywhere
-    tags: bootstrap
-    os_security_group_rule:
-      security_group: "sg-{{ name }}"
-      remote_ip_prefix: 0.0.0.0/0
-    when: state == "present"
-
-  - name: Open security group from inside the cluster
-    tags: bootstrap
-    os_security_group_rule:
-      security_group: "sg-{{ name }}"
-      remote_group: "sg-{{ name }}"
-    when: state == "present"
-
-  - name: Create OpenStack instance
-    os_server:
-      security_groups: "sg-{{ name }}"
-      state: "{{ state }}"
-      name: "{{ name }}-{{ item }}"
-      image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
-      key_name: "{{ lookup('env','KEY') }}"
-      flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
-      nics:
-        - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
-      floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
-      userdata: |
-        #cloud-config
-        package_upgrade: true
-    register: "nodes"
-    with_sequence: count={{ node_count }}
-
-  - name: Delete security group
-    tags: bootstrap
-    os_security_group:
-      name: "sg-{{ name }}"
-      state: absent
-    when: state == "absent"
-
-  - name: Update inventory
-    add_host:
-      name: "{{ item.server.name }}"
-      ansible_ssh_host: "{{ item.server.interface_ip }}"
-      ansible_ssh_user: ubuntu
-      groupname: nodes
-    with_items: "{{ nodes.results }}"
-    when: state == "present"
-
-  - name: Wait during instances boot
-    tags: bootstrap
-    wait_for:
-      host: "{{ item.server.interface_ip }}"
-      port: 22
-      search_regex: OpenSSH
-    with_items: "{{ nodes.results }}"
-    when: state == "present"
-
-  - name: Allow SSH keys on first connection
-    shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
-    with_items: "{{ nodes.results }}"
-    when: state == "present"
+  roles:
+    - instances
 
 - name: Node preparation
   hosts: nodes
   tags:
     - bootstrap
   gather_facts: false
-
-  pre_tasks:
-    - name: Wait for cloud-init to finish
-      raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done
-      tags:
-        - skip_ansible_lint
-
-    # http://stackoverflow.com/questions/32429259/ansible-fails-with-bin-sh-1-usr-bin-python-not-found
-    - name: install ansible requirements
-      raw: /usr/bin/test -f /usr/bin/python || sudo apt-get update && sudo apt-get -y install python-simplejson
-      tags:
-        - skip_ansible_lint
-
-    - name: Setup
-      action: setup
+  roles:
+    - common
 
 - name: Install repo and packages
   hosts: nodes
