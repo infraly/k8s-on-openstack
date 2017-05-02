@@ -124,9 +124,9 @@
         update_cache: yes
       with_items:
         - docker.io=1.12.6-0ubuntu1~16.04.1
-        - kubelet=1.6.1-00
-        - kubeadm=1.6.1-00
-        - kubectl=1.6.1-00
+        - kubelet=1.6.2-00
+        - kubeadm=1.6.2-00
+        - kubectl=1.6.2-00
         - kubernetes-cni=0.5.1-00
 
     - name: add hosts
@@ -186,7 +186,7 @@
         token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
     - name: kubeadm init
-      command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.6.1 --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
+      command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.6.2 --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
       args:
         creates: /etc/kubernetes/kubelet.conf
 
