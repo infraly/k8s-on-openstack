@@ -47,3 +47,6 @@ staging:
     - ansible-playbook site.yaml
   only:
     - master
+  artifacts:
+    paths:
+      - admin.conf
