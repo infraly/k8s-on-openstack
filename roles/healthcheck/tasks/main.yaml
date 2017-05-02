@@ -29,12 +29,3 @@
 - name: Display cluster info
   debug:
     var: clusterinfo.stdout_lines
-
-- name: Slurp kubectl configuration
-  slurp:
-    src: /etc/kubernetes/admin.conf
-  register: kubectl_admin
-
-- name: Save kubectl configuration in a fact
-  set_fact:
-    kubectl: "{{ kubectl_admin['content'] | b64decode | from_yaml }}"
