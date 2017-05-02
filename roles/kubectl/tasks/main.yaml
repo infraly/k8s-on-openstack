@@ -1,0 +1,84 @@
+- name: Parse kubectl configuration
+  set_fact:
+    kubectl: "{{ hostvars[groups['nodes'][0]]['kubectl'] }}"
+  when: state == "present"
+
+- name: Create temp file
+  command: mktemp
+  register: tempfile
+  when: state == "present"
+
+- name: Dump ca certificate
+  shell: echo {{ kubectl['clusters'][0]['cluster']['certificate-authority-data'] }} | base64 -d > {{ tempfile.stdout }}
+  when: state == "present"
+
+- name: Create cluster entry
+  shell: "bash -c 'kubectl config set-cluster {{ name }} \
+          --server={{ kubectl['clusters'][0]['cluster']['server'] }} \
+          --certificate-authority={{ tempfile.stdout }} \
+          --embed-certs=true'"
+  when: state == "present"
+
+- name: Dump client key
+  shell: echo {{ kubectl['users'][0]['user']['client-key-data'] }} | base64 -d > {{ tempfile.stdout }}
+  when: state == "present"
+
+- name: Create user entry key
+  shell: "bash -c 'kubectl config set-credentials admin@{{ name }} \
+          --client-key={{ tempfile.stdout }} \
+          --embed-certs=true'"
+  when: state == "present"
+
+- name: Dump client certificate
+  shell: echo {{ kubectl['users'][0]['user']['client-certificate-data'] }} | base64 -d > {{ tempfile.stdout }}
+  when: state == "present"
+
+- name: Create user entry certificate
+  shell: "bash -c 'kubectl config set-credentials admin@{{ name }} \
+          --client-certificate={{ tempfile.stdout }} \
+          --embed-certs=true'"
+  when: state == "present"
+
+- name: Delete temp file
+  file:
+    path: "{{ tempfile.stdout }}"
+    state: absent
+  when: state == "present"
+
+- name: Create context entry
+  shell: "bash -c 'kubectl config set-context {{ name }} \
+          --cluster={{ name }} \
+          --user=admin@{{ name }}'"
+  when: state == "present"
+
+- name: Test kubectl configuration
+  shell: "kubectl --context={{ name }} get nodes"
+  register: result
+  when: state == "present"
+
+- name: Display kubectl test results
+  debug:
+    var: result.stdout_lines
+  when: state == "present"
+
+- name: Get kubectl version
+  shell: "kubectl --context={{ name }} version"
+  register: result
+  when: state == "present"
+
+- name: Display kubectl version
+  debug:
+    var: result.stdout_lines
+  when: state == "present"
+
+- name: Delete cluster entry
+  command: "kubectl config delete-cluster {{ name }}"
+  when: state == "absent"
+
+- name: Delete context entry
+  command: "kubectl config delete-context {{ name }}"
+  when: state == "absent"
+
+- name: Delete user entry
+  command: "kubectl config unset users.admin@{{ name }}"
+  when: state == "absent"

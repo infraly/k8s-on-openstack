@@ -1,0 +1,5 @@
+- name: kubectl apply weave
+  command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://git.io/weave-kube-1.6
+
+- name: kubectl apply dashboard
+  command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
