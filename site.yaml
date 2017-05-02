@@ -15,6 +15,11 @@
 
 - name: Node preparation
   hosts: all
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        state: "{{ lookup('env','STATE') | default('present', true) }}"
   tags:
     - bootstrap
   gather_facts: false
@@ -58,6 +63,6 @@
     - healthcheck
 
 - name: Local kubectl configuration
-  hosts: localhost
+  hosts: master
   roles:
     - kubectl
