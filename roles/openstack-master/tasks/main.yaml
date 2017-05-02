@@ -13,6 +13,9 @@
     state: "{{ state }}"
     name: "{{ name }}-master"
     image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+    boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
+    terminate_volume: "{{ lookup('env', 'MASTER_TERMINATE_VOLUME') | default('True', true) }}"
+    volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true) }}"
     key_name: "{{ lookup('env','KEY') }}"
     flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
     nics:
