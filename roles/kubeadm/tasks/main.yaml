@@ -1,0 +1,44 @@
+- name: Install k8s APT repo GPG key
+  apt_key:
+    url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+    state: present
+
+- name: Setup k8s APT repo
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+
+- name: Install docker and kubernetes packages
+  apt:
+    name: "{{item}}"
+    state: installed
+    update_cache: yes
+  with_items:
+    - docker.io=1.12.6-0ubuntu1~16.04.1
+    - kubelet=1.6.2-00
+    - kubeadm=1.6.2-00
+    - kubectl=1.6.2-00
+    - kubernetes-cni=0.5.1-00
+
+- name: add hosts
+  lineinfile:
+    dest: "/etc/hosts"
+    regexp: ".*{{ hostvars[item].ansible_hostname }}$"
+    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].ansible_hostname }}"
+    state: present
+  when: hostvars[item].ansible_hostname is defined
+  with_items: "{{groups['all'] | default([])}}"
+
+- name: Create OpenStack cloud configuration
+  template:
+    src: files/cloud-config.j2
+    dest: /etc/kubernetes/cloud-config
+    mode: 0600
+
+- name: Override default kubeadm configuration to use the OpenStack cloud configuration
+  copy:
+    src: files/10-kubeadm.conf
+    dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    mode: 0600
+  notify:
+    - Restart kubelet

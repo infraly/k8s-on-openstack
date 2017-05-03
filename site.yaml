@@ -1,354 +1,68 @@
 ---
 - name: Launch k8s nodes
   hosts: localhost
-  tasks:
-  - name: Set variables
-    set_fact:
-      name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-      state: "{{ lookup('env','STATE') | default('present', true) }}"
-      node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
-
-  - name: Get cloud configuration
-    tags: bootstrap
-    os_client_config:
-
-  - name: Create security group before instances
-    tags: bootstrap
-    os_security_group:
-      name: "sg-{{ name }}"
-      state: present
-    when: state == "present"
-
-  - name: Open security group from anywhere
-    tags: bootstrap
-    os_security_group_rule:
-      security_group: "sg-{{ name }}"
-      remote_ip_prefix: 0.0.0.0/0
-    when: state == "present"
-
-  - name: Open security group from inside the cluster
-    tags: bootstrap
-    os_security_group_rule:
-      security_group: "sg-{{ name }}"
-      remote_group: "sg-{{ name }}"
-    when: state == "present"
-
-  - name: Create OpenStack instance
-    os_server:
-      security_groups: "sg-{{ name }}"
-      state: "{{ state }}"
-      name: "{{ name }}-{{ item }}"
-      image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
-      key_name: "{{ lookup('env','KEY') }}"
-      flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
-      nics:
-        - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
-      floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
-      userdata: |
-        #cloud-config
-        package_upgrade: true
-    register: "nodes"
-    with_sequence: count={{ node_count }}
-
-  - name: Delete security group
-    tags: bootstrap
-    os_security_group:
-      name: "sg-{{ name }}"
-      state: absent
-    when: state == "absent"
-
-  - name: Update inventory
-    add_host:
-      name: "{{ item.server.name }}"
-      ansible_ssh_host: "{{ item.server.interface_ip }}"
-      ansible_ssh_user: ubuntu
-      groupname: nodes
-    with_items: "{{ nodes.results }}"
-    when: state == "present"
-
-  - name: Wait during instances boot
-    tags: bootstrap
-    wait_for:
-      host: "{{ item.server.interface_ip }}"
-      port: 22
-      search_regex: OpenSSH
-    with_items: "{{ nodes.results }}"
-    when: state == "present"
-
-  - name: Allow SSH keys on first connection
-    shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
-    with_items: "{{ nodes.results }}"
-    when: state == "present"
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        state: "{{ lookup('env','STATE') | default('present', true) }}"
+        node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
+  roles:
+    - { role: openstack-security-groups, when: state == 'present' }
+    - openstack-master
+    - openstack-nodes
+    - openstack-security-groups # HACK: needs to be called after instance creation when state==absent
 
 - name: Node preparation
-  hosts: nodes
+  hosts: all
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        state: "{{ lookup('env','STATE') | default('present', true) }}"
   tags:
     - bootstrap
   gather_facts: false
-
-  pre_tasks:
-    - name: Wait for cloud-init to finish
-      raw: while ! test -f /var/lib/cloud/instance/boot-finished; do sleep 1; done
-      tags:
-        - skip_ansible_lint
-
-    # http://stackoverflow.com/questions/32429259/ansible-fails-with-bin-sh-1-usr-bin-python-not-found
-    - name: install ansible requirements
-      raw: /usr/bin/test -f /usr/bin/python || sudo apt-get update && sudo apt-get -y install python-simplejson
-      tags:
-        - skip_ansible_lint
-
-    - name: Setup
-      action: setup
+  roles:
+    - common
 
 - name: Install repo and packages
-  hosts: nodes
+  hosts: all
   tags:
     - bootstrap
   become: true
-  tasks:
-    - name: Install k8s APT repo GPG key
-      apt_key:
-        url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
-        state: present
-
-    - name: Setup k8s APT repo
-      apt_repository:
-        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
-        state: present
-
-    - name: Install docker and kubernetes packages
-      apt:
-        name: "{{item}}"
-        state: installed
-        update_cache: yes
-      with_items:
-        - docker.io=1.12.6-0ubuntu1~16.04.1
-        - kubelet=1.6.1-00
-        - kubeadm=1.6.1-00
-        - kubectl=1.6.1-00
-        - kubernetes-cni=0.5.1-00
-
-    - name: add hosts
-      lineinfile:
-        dest: "/etc/hosts"
-        regexp: ".*{{ hostvars[item].ansible_hostname }}$"
-        line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].ansible_hostname }}"
-        state: present
-      when: hostvars[item].ansible_hostname is defined
-      with_items: "{{groups['all'] | default([])}}"
-
-    - name: Create OpenStack cloud configuration
-      template:
-        src: files/cloud-config.j2
-        dest: /etc/kubernetes/cloud-config
-        mode: 0600
-
-    - name: Override default kubeadm configuration to use the OpenStack cloud configuration
-      copy:
-        src: files/10-kubeadm.conf
-        dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-        mode: 0600
-      notify:
-        - Restart kubelet
-
-  handlers:
-    - name: Restart kubelet
-      systemd:
-        state: restarted
-        daemon_reload: yes
-        name: kubelet
+  roles:
+    - kubeadm
 
 - name: k8s master setup
-  hosts: nodes[0]
+  hosts: master
   tags:
     - bootstrap
   become: true
-  tasks:
-    - name: Check for existing kubelet configuration
-      stat:
-        path: /etc/kubernetes/kubelet.conf
-      register: kubelet_conf
+  roles:
+    - kubeadm-master
 
-    - name: kubeadm token generate
-      command: kubeadm token generate
-      register: token1
-      when: kubelet_conf.stat.exists == False
-
-    - name: kubeadm get existing token
-      command: sh -c "kubeadm token list | awk '/The default bootstrap token/ { print $1; }'"
-      register: token2
-      when: kubelet_conf.stat.exists == True
-
-    # https://github.com/ansible/ansible/issues/4297
-    - name: token
-      set_fact:
-        token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
-
-    - name: kubeadm init
-      command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.6.1 --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
-      args:
-        creates: /etc/kubernetes/kubelet.conf
-
-    - name: Configure kube-controller-manager cloud provider integration
-      blockinfile:
-        dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
-        insertbefore: 'image: '
-        block: "    - --cloud-provider=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
-
-- name: k8s minions setup
-  hosts: nodes[1:]
+- name: k8s nodes setup
+  hosts: nodes
+  become: true
   tags:
     - bootstrap
-  become: true
-  tasks:
-    - name: kubeadm join
-      command: "kubeadm join --skip-preflight-checks --token {{ hostvars[groups['nodes'][0]]['token'].stdout }} {{ hostvars[groups.nodes[0]]['ansible_default_ipv4']['address'] }}:6443"
-      args:
-        creates: /etc/kubernetes/kubelet.conf
+  roles:
+    - kubeadm-nodes
 
 - name: k8s addons
-
-  hosts: nodes[0]
+  hosts: master
   tags:
     - bootstrap
-  become: true
-  tasks:
-    - name: kubectl apply weave
-      command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://git.io/weave-kube-1.6
-
-    - name: kubectl apply dashboard
-      command: kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+  roles:
+    - k8s-addons
 
 - name: Health check
-  hosts: nodes[0]
-  become: true
-  tasks:
-    - name: Wait for nodes registration
-      shell: "/usr/bin/test $(kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes | grep -ow Ready | wc -l) == {{ groups['nodes'] | length }}"
-      register: nodes_status
-      retries: 30
-      delay: 10
-      until: nodes_status | success
-      ignore_errors: yes
-
-    - name: Get event log
-      command: kubectl --kubeconfig /etc/kubernetes/admin.conf get events --all-namespaces
-      register: events
-
-    - name: Display events
-      debug:
-        var: events.stdout_lines
-
-    - name: Get nodes
-      command: kubectl --kubeconfig /etc/kubernetes/admin.conf get nodes
-      register: nodes
-
-    - name: Display nodes
-      debug:
-        var: nodes.stdout_lines
-
-    - name: Get cluster info
-      command: kubectl --kubeconfig /etc/kubernetes/admin.conf cluster-info
-      register: clusterinfo
-
-    - name: Display cluster info
-      debug:
-        var: clusterinfo.stdout_lines
-
-    - name: Slurp kubectl configuration
-      slurp:
-        src: /etc/kubernetes/admin.conf
-      register: kubectl_admin
-
-    - name: Save kubectl configuration in a fact
-      set_fact:
-        kubectl: "{{ kubectl_admin['content'] | b64decode | from_yaml }}"
+  hosts: master
+  roles:
+    - healthcheck
 
 - name: Local kubectl configuration
-  hosts: localhost
-  tasks:
-    - name: Parse kubectl configuration
-      set_fact:
-        kubectl: "{{ hostvars[groups['nodes'][0]]['kubectl'] }}"
-      when: state == "present"
-
-    - name: Create temp file
-      command: mktemp
-      register: tempfile
-      when: state == "present"
-
-    - name: Dump ca certificate
-      shell: echo {{ kubectl['clusters'][0]['cluster']['certificate-authority-data'] }} | base64 -d > {{ tempfile.stdout }}
-      when: state == "present"
-
-    - name: Create cluster entry
-      shell: "bash -c 'kubectl config set-cluster {{ name }} \
-              --server={{ kubectl['clusters'][0]['cluster']['server'] }} \
-              --certificate-authority={{ tempfile.stdout }} \
-              --embed-certs=true'"
-      when: state == "present"
-
-    - name: Dump client key
-      shell: echo {{ kubectl['users'][0]['user']['client-key-data'] }} | base64 -d > {{ tempfile.stdout }}
-      when: state == "present"
-
-    - name: Create user entry key
-      shell: "bash -c 'kubectl config set-credentials admin@{{ name }} \
-              --client-key={{ tempfile.stdout }} \
-              --embed-certs=true'"
-      when: state == "present"
-
-    - name: Dump client certificate
-      shell: echo {{ kubectl['users'][0]['user']['client-certificate-data'] }} | base64 -d > {{ tempfile.stdout }}
-      when: state == "present"
-
-    - name: Create user entry certificate
-      shell: "bash -c 'kubectl config set-credentials admin@{{ name }} \
-              --client-certificate={{ tempfile.stdout }} \
-              --embed-certs=true'"
-      when: state == "present"
-
-    - name: Delete temp file
-      file:
-        path: "{{ tempfile.stdout }}"
-        state: absent
-      when: state == "present"
-
-    - name: Create context entry
-      shell: "bash -c 'kubectl config set-context {{ name }} \
-              --cluster={{ name }} \
-              --user=admin@{{ name }}'"
-      when: state == "present"
-
-    - name: Test kubectl configuration
-      shell: "kubectl --context={{ name }} get nodes"
-      register: result
-      when: state == "present"
-
-    - name: Display kubectl test results
-      debug:
-        var: result.stdout_lines
-      when: state == "present"
-
-    - name: Get kubectl version
-      shell: "kubectl --context={{ name }} version"
-      register: result
-      when: state == "present"
-
-    - name: Display kubectl version
-      debug:
-        var: result.stdout_lines
-      when: state == "present"
-
-    - name: Delete cluster entry
-      command: "kubectl config delete-cluster {{ name }}"
-      when: state == "absent"
-
-    - name: Delete context entry
-      command: "kubectl config delete-context {{ name }}"
-      when: state == "absent"
-
-    - name: Delete user entry
-      command: "kubectl config unset users.admin@{{ name }}"
-      when: state == "absent"
+  hosts: master
+  roles:
+    - kubectl

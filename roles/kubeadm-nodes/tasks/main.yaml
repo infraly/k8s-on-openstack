@@ -1,0 +1,4 @@
+- name: kubeadm join
+  command: "kubeadm join --skip-preflight-checks --token {{ hostvars[groups.master[0]]['token'].stdout }} {{ hostvars[groups.master[0]]['ansible_default_ipv4']['address'] }}:6443"
+  args:
+    creates: /etc/kubernetes/kubelet.conf

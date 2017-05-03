@@ -1,0 +1,42 @@
+- name: Get cloud configuration
+  tags: bootstrap
+  os_client_config:
+
+- name: Create OpenStack instance
+  os_server:
+    security_groups: "sg-{{ name }}-master"
+    state: "{{ state }}"
+    name: "{{ name }}-master"
+    image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+    boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
+    terminate_volume: "{{ lookup('env', 'MASTER_TERMINATE_VOLUME') | default('True', true) }}"
+    volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true) }}"
+    key_name: "{{ lookup('env','KEY') }}"
+    flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
+    nics:
+      - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
+    floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
+    userdata: |
+      #cloud-config
+      package_upgrade: true
+  register: "instance"
+
+- name: Update inventory
+  add_host:
+    name: "{{ instance.server.name }}"
+    ansible_ssh_host: "{{ instance.server.interface_ip }}"
+    ansible_ssh_user: ubuntu
+    groupname: master
+  when: state == "present"
+
+- name: Wait during instances boot
+  tags: bootstrap
+  wait_for:
+    host: "{{ instance.server.interface_ip }}"
+    port: 22
+    search_regex: OpenSSH
+  when: state == "present"
+
+- name: Allow SSH keys on first connection
+  shell: "ssh-keyscan {{ instance.server.interface_ip }} >> ~/.ssh/known_hosts"
+  when: state == "present"
