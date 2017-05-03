@@ -36,7 +36,7 @@ $ ansible-playbook site.yaml
 Destroy the cluster:
 
 ```console
-$ ansible-playbook site.yaml -e STATE=absent
+$ STATE=absent ansible-playbook site.yaml
 ```
 
 CI/CD
