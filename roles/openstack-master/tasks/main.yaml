@@ -19,6 +19,8 @@
     userdata: |
       #cloud-config
       package_upgrade: true
+      hostname: "{{ name }}-master"
+      manage_etc_hosts: true
   register: "instance"
 
 - name: Update inventory

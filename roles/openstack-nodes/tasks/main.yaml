@@ -16,6 +16,8 @@
     userdata: |
       #cloud-config
       package_upgrade: true
+      hostname: "{{ name }}-{{ item }}"
+      manage_etc_hosts: true
   register: "instances"
   with_sequence: count={{ node_count }}
 
