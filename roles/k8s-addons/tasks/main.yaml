@@ -3,3 +3,11 @@
 
 - name: kubectl apply dashboard
   command: kubectl apply -f https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml
+
+- name: copy manifests
+  copy:
+    src: "{{ role_path }}/files/manifests/"
+    dest: "/home/ubuntu/manifests/"
+
+- name: kubectl apply nginx-ingress-controller
+  command: kubectl apply -f /home/ubuntu/manifests/nginx-ingress-controller.yaml
