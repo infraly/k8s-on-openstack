@@ -12,11 +12,19 @@
     state: present
   when: state == "present"
 
-- name: Allow traffic to master from anywhere
+- name: Allow traffic to master from anywhere IPv4
   tags: bootstrap
   os_security_group_rule:
     security_group: "sg-{{ name }}-master"
     remote_ip_prefix: 0.0.0.0/0
+  when: state == "present"
+
+- name: Allow traffic to master from anywhere IPv6
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    ethertype: IPv6
+    remote_ip_prefix: ::/0
   when: state == "present"
 
 - name: Allow traffic to master from nodes
@@ -27,11 +35,19 @@
   when: state == "present"
 
 
-- name: Allow traffic to nodes from anywhere
+- name: Allow traffic to nodes from anywhere IPv4
   tags: bootstrap
   os_security_group_rule:
     security_group: "sg-{{ name }}-nodes"
     remote_ip_prefix: 0.0.0.0/0
+  when: state == "present"
+
+- name: Allow traffic to nodes from anywhere IPv6
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-nodes"
+    ethertype: IPv6
+    remote_ip_prefix: ::/0
   when: state == "present"
 
 - name: Allow traffic to nodes from nodes
