@@ -4,7 +4,6 @@
   retries: 30
   delay: 10
   until: nodes_status | success
-  ignore_errors: yes
 
 - name: Get event log
   command: kubectl get events --all-namespaces
