@@ -23,7 +23,9 @@ The following optional environment variables can also be set:
   * `NAME`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
   * `IMAGE``: name of an existing Ubuntu 16.04 image
   * `NETWORK`: name of the network to which instances should be connected
+  * `SUBNET_UUID`: UUID of the subnet to which instances should be connected (required for LBaaSv2)
   * `FLOATING_IP_POOL`: name of the floating IP pool
+  * `FLOATING_IP_NETWORK_UUID`: uuid of the floating IP network (required for LBaaSv2)
   * `NODE_MEMORY`: how many MB of memory should nodes have, defaults to 4GB
   * `NODE_COUNT`: how many nodes should we provision, defaults to 3
   * `MASTER_BOOT_FROM_VOLUME`: boot the master instance on a volume for data persistence, defaults to True
