@@ -47,3 +47,13 @@
     owner: ubuntu
     group: ubuntu
     mode: 0600
+
+- name: Check for existing kubectl bash completion
+  stat:
+    path: /etc/bash_completion.d/kubectl
+  register: kubectl_bash_completion
+
+- name: Ensure kubectl bash_completion is present
+  become: True
+  shell: kubectl completion bash > /etc/bash_completion.d/kubectl
+  when: kubectl_bash_completion.stat.exists == False
