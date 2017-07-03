@@ -19,4 +19,8 @@ trust-device-path = false
 lb-version = v2
 floating-network-id = {{ lookup('env', 'FLOATING_IP_NETWORK_UUID') }}
 subnet-id = {{ lookup('env', 'SUBNET_UUID') }}
+create-monitor = yes
+monitor-delay = 1m
+monitor-timeout = 30s
+monitor-max-retries = 3
 {% endif %}
