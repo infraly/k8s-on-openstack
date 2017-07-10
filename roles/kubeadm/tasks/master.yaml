@@ -19,7 +19,7 @@
     token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
 - name: kubeadm init
-  command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.6.2 --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
+  command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.7.0 --apiserver-advertise-address {{ hostvars[groups.nodes[0]].ansible_ssh_host }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
 
