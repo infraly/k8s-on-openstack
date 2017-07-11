@@ -12,6 +12,7 @@
     flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
     nics:
       - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
+    auto_ip: false
     userdata: |
       #cloud-config
       package_upgrade: true
