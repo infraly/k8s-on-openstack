@@ -12,12 +12,15 @@
     flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
     nics:
       - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
-    floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
+    auto_ip: false
     userdata: |
       #cloud-config
       package_upgrade: true
       hostname: "{{ name }}-{{ item }}"
       manage_etc_hosts: true
+      packages:
+        - python
+        - python-simplejson
   register: "instances"
   with_sequence: count={{ node_count }}
 
@@ -31,22 +34,32 @@
 - name: Update inventory
   add_host:
     name: "{{ item.server.name }}"
-    ansible_ssh_host: "{{ item.server.interface_ip }}"
+    ansible_ssh_host: "{{ item.server.private_v4 }}"
     ansible_ssh_user: ubuntu
+    ansible_ssh_common_args: "-o ProxyCommand=\"ssh -W %h:%p -q ubuntu@{{ hostvars[groups.master[0]]['ansible_ssh_host'] }}\""
     groupname: nodes
   with_items: "{{ instances.results }}"
   when: state == "present"
 
-- name: Wait during instances boot
-  tags: bootstrap
+- name: Wait during nodes boot
   wait_for:
-    host: "{{ item.server.interface_ip }}"
+    host: "{{ hostvars[item]['ansible_ssh_host'] }}"
     port: 22
     search_regex: OpenSSH
-  with_items: "{{ instances.results }}"
+  with_items: "{{ groups.nodes }}"
+  delegate_to: "{{ groups.master[0] }}"
   when: state == "present"
 
-- name: Allow SSH keys on first connection
-  shell: "ssh-keyscan {{ item.server.interface_ip }} >> ~/.ssh/known_hosts"
-  with_items: "{{ instances.results }}"
+- name: Scan SSH host keys
+  command: "ssh-keyscan {{ hostvars[item]['ansible_ssh_host'] }}"
+  with_items: "{{ groups.nodes }}"
+  register: ssh_host_keys
+  delegate_to: "{{ groups.master[0] }}"
+  when: state == "present"
+
+- name: Update SSH known_hosts
+  lineinfile:
+    name: ~/.ssh/known_hosts
+    line: "{{ item.stdout }}"
+  with_items: "{{ ssh_host_keys.results }}"
   when: state == "present"

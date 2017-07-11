@@ -21,6 +21,9 @@
       package_upgrade: true
       hostname: "{{ name }}-master"
       manage_etc_hosts: true
+      packages:
+        - python
+        - python-simplejson
   register: "instance"
 
 - name: Update inventory
