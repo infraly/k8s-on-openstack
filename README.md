@@ -21,7 +21,7 @@ The following optional environment variables can also be set:
 
   * `STATE`: set to `present` by default and must be set to `absent` to destroy the cluster
   * `NAME`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
-  * `IMAGE``: name of an existing Ubuntu 16.04 image
+  * `IMAGE`: name of an existing Ubuntu 16.04 image
   * `NETWORK`: name of the network to which instances should be connected
   * `SUBNET_UUID`: UUID of the subnet to which instances should be connected (required for LBaaSv2)
   * `FLOATING_IP_POOL`: name of the floating IP pool
