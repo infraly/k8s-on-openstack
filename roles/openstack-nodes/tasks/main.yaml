@@ -12,7 +12,6 @@
     flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
     nics:
       - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
-    floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
     userdata: |
       #cloud-config
       package_upgrade: true
@@ -33,6 +32,7 @@
     name: "{{ item.server.name }}"
     ansible_ssh_host: "{{ item.server.interface_ip }}"
     ansible_ssh_user: ubuntu
+    ansible_ssh_common_args: "-o ProxyCommand=\"ssh -W %h:%p -q ubuntu@{{ hostvars[groups.master[0]]['ansible_ssh_host'] }}\""
     groupname: nodes
   with_items: "{{ instances.results }}"
   when: state == "present"
