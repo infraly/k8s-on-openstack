@@ -4,10 +4,14 @@
   retries: 30
   delay: 10
   until: nodes_status | success
+  tags:
+    - skip_ansible_lint
 
 - name: Get event log
   command: kubectl get events --all-namespaces
   register: events
+  tags:
+    - skip_ansible_lint
 
 - name: Display events
   debug:
@@ -16,6 +20,8 @@
 - name: Get nodes
   command: kubectl get nodes
   register: nodes
+  tags:
+    - skip_ansible_lint
 
 - name: Display nodes
   debug:
@@ -24,6 +30,8 @@
 - name: Get cluster info
   command: kubectl cluster-info
   register: clusterinfo
+  tags:
+    - skip_ansible_lint
 
 - name: Display cluster info
   debug:
