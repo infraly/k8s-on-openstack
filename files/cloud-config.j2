@@ -13,6 +13,7 @@ domain-name = {{ lookup('env', 'OS_DOMAIN_NAME') }}
 
 [BlockStorage]
 trust-device-path = false
+bs-version = v2
 
 {% if lookup('env', 'FLOATING_IP_NETWORK_UUID') != '' %}
 [LoadBalancer]
