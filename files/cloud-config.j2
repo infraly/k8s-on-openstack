@@ -25,3 +25,9 @@ monitor-delay = 1m
 monitor-timeout = 30s
 monitor-max-retries = 3
 {% endif %}
+
+{% if lookup('env', 'ROUTER_UUID') != '' %}
+[Route]
+router-id =  {{ lookup('env', 'ROUTER_UUID') }}
+{% endif %}
+

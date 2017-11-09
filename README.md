@@ -7,7 +7,6 @@ It is based on the following tools:
 
   * `kubeadm`
   * `ansible`
-  * `weave-net`
 
 Getting started
 ---------------
@@ -23,6 +22,7 @@ The following optional environment variables can also be set:
   * `NAME`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
   * `IMAGE`: name of an existing Ubuntu 16.04 image
   * `NETWORK`: name of the network to which instances should be connected
+  * `ROUTER_UUID`: UUID of the openstack router used for external connectivity
   * `SUBNET_UUID`: UUID of the subnet to which instances should be connected (required for LBaaSv2)
   * `FLOATING_IP_POOL`: name of the floating IP pool
   * `FLOATING_IP_NETWORK_UUID`: uuid of the floating IP network (required for LBaaSv2)
