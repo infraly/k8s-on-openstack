@@ -8,6 +8,7 @@
         state: "{{ lookup('env','STATE') | default('present', true) }}"
         node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
   roles:
+    - { role: openstack-security-groups, when: state == 'present' }
     - openstack-master
 
 - name: Master preparation
@@ -27,6 +28,7 @@
   hosts: localhost
   roles:
     - openstack-nodes
+    - openstack-security-groups # HACK: needs to be called after instance creation when state==absent
 
 - name: Nodes preparation
   hosts: nodes

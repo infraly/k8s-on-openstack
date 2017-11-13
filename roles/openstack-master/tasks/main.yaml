@@ -4,6 +4,7 @@
 
 - name: Create OpenStack instance
   os_server:
+    security_groups: "sg-{{ name }}-master"
     state: "{{ state }}"
     name: "{{ name }}-master"
     image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
