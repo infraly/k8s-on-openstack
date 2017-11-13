@@ -27,7 +27,7 @@
   blockinfile:
     dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
     insertbefore: 'image: '
-    block: "    - --cloud-provider=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
+    block: "    - --cloud-provider=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config\n    - --allocate-node-cidrs=true\n    - --cluster-cidr=10.96.0.0/16"
 
 - name: Ensure kubectl configuration directory is present
   become: True
