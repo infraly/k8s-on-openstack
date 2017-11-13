@@ -4,7 +4,6 @@
 
 - name: Create OpenStack instance
   os_server:
-    security_groups: "sg-{{ name }}-nodes"
     state: "{{ state }}"
     name: "{{ name }}-{{ item }}"
     image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
@@ -23,13 +22,6 @@
         - python-simplejson
   register: "instances"
   with_sequence: count={{ node_count }}
-
-- name: Delete security group
-  tags: bootstrap
-  os_security_group:
-    name: "sg-{{ name }}"
-    state: absent
-  when: state == "absent"
 
 - name: Update inventory
   add_host:
