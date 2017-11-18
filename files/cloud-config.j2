@@ -1,7 +1,7 @@
 [Global]
 auth-url = {{ lookup('env', 'OS_AUTH_URL') }}
 username = {{ lookup('env', 'OS_USERNAME') }}
-password = {{ lookup('env', 'OS_PASSWORD') }}
+password = "{{ lookup('env', 'OS_PASSWORD') }}"
 tenant-name = {{ lookup('env', 'OS_PROJECT_NAME') }}
 tenant-id = {{ lookup('env', 'OS_PROJECT_ID') }}
 {% if lookup('env', 'OS_REGION_NAME') != '' %}
