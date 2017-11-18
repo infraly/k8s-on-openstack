@@ -57,9 +57,6 @@
   shell: kubectl completion bash > /etc/bash_completion.d/kubectl
   when: kubectl_bash_completion.stat.exists == False
 
-- name: Workaround kubeadm 1.7.0 race condition, see https://github.com/kubernetes/kubeadm/issues/335
-  script: kubeadm-1-7-0-race-condition-workaround.sh
-
 - name: Fetch CA cert
   fetch:
     src: /etc/kubernetes/pki/ca.crt
