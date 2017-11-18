@@ -2,7 +2,7 @@
   file: path=/etc/kubernetes/pki/ state=directory
 
 - copy:
-    src: /tmp/k8s-master/etc/kubernetes/pki/ca.crt
+    src: /tmp/{{ name }}-master/etc/kubernetes/pki/ca.crt
     dest: /etc/kubernetes/pki/ca.crt
     mode: 0644
 
