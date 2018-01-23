@@ -19,15 +19,13 @@ bs-version = v2
 [LoadBalancer]
 lb-version = v2
 floating-network-id = {{ lookup('env', 'FLOATING_IP_NETWORK_UUID') }}
-subnet-id = {{ lookup('env', 'SUBNET_UUID') }}
+subnet-id = {{ hostvars['k8s-master']['subnetuuid'] }}
 create-monitor = yes
 monitor-delay = 1m
 monitor-timeout = 30s
 monitor-max-retries = 3
 {% endif %}
 
-{% if lookup('env', 'ROUTER_UUID') != '' %}
 [Route]
-router-id =  {{ lookup('env', 'ROUTER_UUID') }}
-{% endif %}
+router-id = {{ hostvars['k8s-master']['routeruuid'] }}
 

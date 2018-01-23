@@ -11,7 +11,7 @@
     key_name: "{{ lookup('env','KEY') }}"
     flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
     nics:
-      - net-name: "{{ lookup('env', 'NETWORK') | default(omit) }}"
+      - net-name: "{{ lookup('env', 'NETWORK') |  default('k8s', true) }}"
     auto_ip: false
     userdata: |
       #cloud-config
