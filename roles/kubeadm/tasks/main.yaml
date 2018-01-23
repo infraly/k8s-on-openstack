@@ -31,6 +31,19 @@
     - kubectl=1.8.4-00
     - kubernetes-cni=0.5.1-00
 
+- name: configure docker to use journald
+  copy:
+    content: |
+      {
+        "log-driver": "journald"
+      }
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Restart docker
+
 - name: add hosts
   lineinfile:
     dest: "/etc/hosts"
