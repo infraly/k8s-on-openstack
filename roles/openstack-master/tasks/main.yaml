@@ -29,7 +29,7 @@
 - name: Update inventory
   add_host:
     name: "{{ instance.server.name }}"
-    ansible_ssh_host: "{{ instance.server.interface_ip }}"
+    ansible_ssh_host: "{{ instance.openstack.accessIPv4 }}"
     ansible_ssh_user: ubuntu
     groupname: master
     routeruuid: "{{ routeruuid }}"
@@ -39,11 +39,11 @@
 - name: Wait during instances boot
   tags: bootstrap
   wait_for:
-    host: "{{ instance.server.interface_ip }}"
+    host: "{{ instance.openstack.accessIPv4 }}"
     port: 22
     search_regex: OpenSSH
   when: state == "present"
 
 - name: Allow SSH keys on first connection
-  shell: "ssh-keyscan {{ instance.server.interface_ip }} >> ~/.ssh/known_hosts"
+  shell: "ssh-keyscan {{ instance.openstack.accessIPv4 }} >> ~/.ssh/known_hosts"
   when: state == "present"
