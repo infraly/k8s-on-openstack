@@ -26,7 +26,7 @@ spec:
     - --cloud-config=/etc/kubernetes/cloud-config
     - --allocate-node-cidrs=true
     - --cluster-cidr=10.96.0.0/16
-    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.8.4
+    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.9.2
     livenessProbe:
       failureThreshold: 8
       httpGet:
