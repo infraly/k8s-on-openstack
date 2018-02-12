@@ -17,7 +17,7 @@
       #cloud-config
       package_upgrade: true
       hostname: "{{ name }}-{{ item }}"
-      manage_etc_hosts: true
+      manage_etc_hosts: false
       packages:
         - python
         - python-simplejson
