@@ -2,11 +2,35 @@
 - name: Launch k8s master
   hosts: localhost
   pre_tasks:
+    - name: create network
+      os_network:
+        state: present
+        name: "{{ lookup('env','NETWORK') | default('k8s', true) }}"
+
+    - name: create subnet
+      os_subnet:
+        state: present
+        network_name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        name: "{{ lookup('env','SUBNET_NAME') | default('k8s', true) }}"
+        cidr: 10.8.10.0/24
+      register: subnet
+
+    - name: create router
+      os_router:
+        state: present
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        network: public
+        interfaces:
+          - "{{ lookup('env','SUBNET_NAME') | default('k8s', true) }}"
+      register: router
+
     - name: Set variables
       set_fact:
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         state: "{{ lookup('env','STATE') | default('present', true) }}"
         node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
+        routeruuid: "{{ router.id }}"
+        subnetuuid: "{{ subnet.id }}"
   roles:
     - { role: openstack-security-groups, when: state == 'present' }
     - openstack-master

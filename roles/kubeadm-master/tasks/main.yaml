@@ -19,15 +19,30 @@
     token: "{{ token1 if kubelet_conf.stat.exists == False else token2 }}"
 
 - name: kubeadm init
-  command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.7.0 --apiserver-advertise-address {{ hostvars[groups.master[0]].ansible_ssh_host }}"
+  command: "kubeadm init --skip-preflight-checks --token {{ token.stdout }} --kubernetes-version v1.9.2 --apiserver-advertise-address {{ hostvars[groups.master[0]].ansible_ssh_host }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
 
 - name: Configure kube-controller-manager cloud provider integration
-  blockinfile:
+  copy:
     dest: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    src: files/kube-controller-manager.yaml
+
+- name: Upload webook kubeconfig file
+  copy:
+    dest: /etc/kubernetes/pki/webhook.kubeconfig.yaml
+    src: files/webhook.kubeconfig.yaml
+
+- name: Upload webook kubeconfig file
+  template:
+    dest: /etc/kubernetes/manifests/k8s-keystone-auth.yaml
+    src: files/k8s-keystone-auth.yaml.j2
+
+- name: Configure keystone integration
+  blockinfile:
     insertbefore: 'image: '
-    block: "    - --cloud-provider=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
+    block: "    - --authentication-token-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml"
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
 
 - name: Ensure kubectl configuration directory is present
   become: True
@@ -58,5 +73,7 @@
   shell: kubectl completion bash > /etc/bash_completion.d/kubectl
   when: kubectl_bash_completion.stat.exists == False
 
-- name: Workaround kubeadm 1.7.0 race condition, see https://github.com/kubernetes/kubeadm/issues/335
-  script: kubeadm-1-7-0-race-condition-workaround.sh
+- name: Fetch CA cert
+  fetch:
+    src: /etc/kubernetes/pki/ca.crt
+    dest: /tmp/

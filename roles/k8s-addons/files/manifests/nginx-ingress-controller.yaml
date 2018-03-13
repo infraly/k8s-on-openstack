@@ -33,6 +33,7 @@ rules:
   - list
   - update
   - get
+  - patch
 - apiGroups:
   - "extensions"
   resources:
@@ -40,6 +41,7 @@ rules:
   - ingresses
   verbs:
   - update
+  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
@@ -63,10 +65,12 @@ rules:
   - ""
   resources:
   - endpoints
+  - configmaps
   verbs:
   - get
   - create
   - update
+  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
@@ -115,7 +119,7 @@ spec:
         # Any image is permissable as long as:
         # 1. It serves a 404 page at /
         # 2. It serves 200 on a /healthz endpoint
-        image: gcr.io/google_containers/defaultbackend:1.0
+        image: gcr.io/google_containers/defaultbackend:1.4
         livenessProbe:
           httpGet:
             path: /healthz
@@ -175,7 +179,7 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccountName: ingress
       containers:
-      - image: gcr.io/google_containers/nginx-ingress-controller:0.9.0-beta.4
+      - image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.10.2
         name: nginx-ingress-controller
         readinessProbe:
           httpGet:
