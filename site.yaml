@@ -5,13 +5,13 @@
     - name: create network
       os_network:
         state: present
-        name: "{{ lookup('env','NETWORK') | default('k8s', true) }}"
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
 
     - name: create subnet
       os_subnet:
         state: present
         network_name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        name: "{{ lookup('env','SUBNET_NAME') | default('k8s', true) }}"
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         cidr: 10.8.10.0/24
       register: subnet
 
@@ -21,7 +21,7 @@
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         network: public
         interfaces:
-          - "{{ lookup('env','SUBNET_NAME') | default('k8s', true) }}"
+          - "{{ lookup('env','NAME') | default('k8s', true) }}"
       register: router
 
     - name: Set variables
