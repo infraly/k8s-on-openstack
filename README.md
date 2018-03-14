@@ -51,6 +51,7 @@ The following environment variables needs to be defined:
   * `OS_AUTH_URL`
   * `OS_PASSWORD`
   * `OS_USERNAME`
+  * `OS_DOMAIN_NAME`
 
 Author
 ------
