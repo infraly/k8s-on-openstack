@@ -53,10 +53,11 @@ The following environment variables needs to be defined:
   * `OS_USERNAME`
   * `OS_DOMAIN_NAME`
 
-Author
+Authors
 ------
 
   * François Deppierraz <francois.deppierraz@infraly.ch>
+  * Saverio Proto <saverio.proto@switch.ch>
 
 References
 ----------
