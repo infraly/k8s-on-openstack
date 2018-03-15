@@ -14,6 +14,9 @@
     - openstack-security-groups
 
   tasks:
+    - name: clear static routes
+      shell: openstack router set --no-route "{{ lookup('env','NAME') | default('k8s', true) }}"
+
     - name: delete router
       os_router:
         state: absent
