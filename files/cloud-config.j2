@@ -11,6 +11,8 @@ region = {{ lookup('env', 'OS_REGION_NAME') }}
 {% endif %}
 {% if lookup('env', 'OS_DOMAIN_NAME') != '' %}
 domain-name = {{ lookup('env', 'OS_DOMAIN_NAME') }}
+{% elif lookup('env', 'OS_USER_DOMAIN_NAME') != '' %}
+domain-name = {{ lookup('env', 'OS_USER_DOMAIN_NAME') }}
 {% endif %}
 {% if lookup('env', 'OS_USER_DOMAIN_ID') != '' %}
 domain-name = {{ lookup('env', 'OS_USER_DOMAIN_ID') }}
