@@ -13,6 +13,9 @@
         network_name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         cidr: 10.8.10.0/24
+        dns_nameservers:
+          - 8.8.8.8
+          - 8.8.4.4
       register: subnet
 
     - name: create router
