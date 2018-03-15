@@ -4,12 +4,10 @@
   pre_tasks:
     - name: create network
       os_network:
-        state: present
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
 
     - name: create subnet
       os_subnet:
-        state: present
         network_name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         cidr: 10.8.10.0/24
@@ -20,7 +18,6 @@
 
     - name: create router
       os_router:
-        state: present
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         network: public
         interfaces:
@@ -30,12 +27,12 @@
     - name: Set variables
       set_fact:
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        state: "{{ lookup('env','STATE') | default('present', true) }}"
+        state: present
         node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
         routeruuid: "{{ router.id }}"
         subnetuuid: "{{ subnet.id }}"
   roles:
-    - { role: openstack-security-groups, when: state == 'present' }
+    - openstack-security-groups
     - openstack-master
 
 - name: Master preparation
@@ -44,7 +41,7 @@
     - name: Set variables
       set_fact:
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        state: "{{ lookup('env','STATE') | default('present', true) }}"
+        state: present
   tags:
     - bootstrap
   gather_facts: false
@@ -55,7 +52,6 @@
   hosts: localhost
   roles:
     - openstack-nodes
-    - openstack-security-groups # HACK: needs to be called after instance creation when state==absent
 
 - name: Nodes preparation
   hosts: nodes
@@ -63,7 +59,6 @@
     - name: Set variables
       set_fact:
         name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        state: "{{ lookup('env','STATE') | default('present', true) }}"
   tags:
     - bootstrap
   gather_facts: false

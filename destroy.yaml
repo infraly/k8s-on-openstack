@@ -1,0 +1,30 @@
+---
+- name: Destroy k8s cluster
+  hosts: localhost
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
+        state: absent
+
+  roles:
+    - openstack-master
+    - openstack-nodes
+    - openstack-security-groups
+
+  tasks:
+    - name: delete router
+      os_router:
+        state: absent
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+
+    - name: delete network
+      os_network:
+        state: absent
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+
+    - name: delete subnet
+      os_subnet:
+        state: absent
+        name: "{{ lookup('env','NAME') | default('k8s', true) }}"

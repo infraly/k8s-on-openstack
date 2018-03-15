@@ -18,7 +18,6 @@ The following mandatory environment variables need to be set before calling `ans
 
 The following optional environment variables can also be set:
 
-  * `STATE`: set to `present` by default and must be set to `absent` to destroy the cluster
   * `NAME`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
   * `IMAGE`: name of an existing Ubuntu 16.04 image
   * `FLOATING_IP_POOL`: name of the floating IP pool
@@ -39,7 +38,7 @@ $ ansible-playbook site.yaml
 Destroy the cluster:
 
 ```console
-$ STATE=absent ansible-playbook site.yaml
+$ ansible-playbook destroy.yaml
 ```
 
 CI/CD
