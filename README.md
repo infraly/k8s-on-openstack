@@ -51,10 +51,12 @@ The following environment variables needs to be defined:
   * `OS_PASSWORD`
   * `OS_USERNAME`
 
-Author
+Authors
 ------
 
   * François Deppierraz <francois.deppierraz@infraly.ch>
+  * Saverio Proto <saverio.proto@switch.ch>
+  * Oli Schacher <oli.schacher@switch.ch>
 
 References
 ----------
