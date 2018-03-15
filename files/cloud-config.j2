@@ -11,6 +11,8 @@ region = {{ lookup('env', 'OS_REGION_NAME') }}
 {% endif %}
 {% if lookup('env', 'OS_DOMAIN_NAME') != '' %}
 domain-name = {{ lookup('env', 'OS_DOMAIN_NAME') }}
+{% elif lookup('env', 'OS_USER_DOMAIN_NAME') != '' %}
+domain-name = {{ lookup('env', 'OS_USER_DOMAIN_NAME') }}
 {% endif %}
 {% if lookup('env', 'OS_USER_DOMAIN_ID') != '' %}
 domain-name = {{ lookup('env', 'OS_USER_DOMAIN_ID') }}
@@ -24,7 +26,7 @@ bs-version = v2
 [LoadBalancer]
 lb-version = v2
 floating-network-id = {{ lookup('env', 'FLOATING_IP_NETWORK_UUID') }}
-subnet-id = {{ hostvars['k8s-master']['subnetuuid'] }}
+subnet-id = {{ hostvars[groups.master[0]]['subnetuuid'] }}
 create-monitor = yes
 monitor-delay = 1m
 monitor-timeout = 30s
@@ -32,5 +34,4 @@ monitor-max-retries = 3
 {% endif %}
 
 [Route]
-router-id = {{ hostvars['k8s-master']['routeruuid'] }}
-
+router-id = {{ hostvars[groups.master[0]]['routeruuid'] }}

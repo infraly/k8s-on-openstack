@@ -1,0 +1,30 @@
+language: python
+
+virtualenv:
+  system_site_packages: true
+
+install:
+  - pip install python-openstackclient
+  - pip install shade
+  - pip install ansible
+  - pip install ansible-lint
+
+env:
+  NAME: k8s-ci-$TRAVIS_BUILD_NUMBER
+  NETWORK: k8s-ci-$TRAVIS_BUILD_NUMBER
+  KEY: ci-$TRAVIS_BUILD_NUMBER
+  MASTER_BOOT_FROM_VOLUME: False
+
+before_script:
+  - mkdir -p ~/.ssh
+  - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
+  - openstack keypair create --public-key ~/.ssh/id_rsa.pub ci-$TRAVIS_BUILD_NUMBER
+
+script:
+  - ansible-playbook --syntax-check site.yaml
+  - ansible-lint site.yaml || true
+  - ansible-playbook site.yaml
+
+after_script:
+  - ansible-playbook destroy.yaml
+  - openstack keypair delete ci-$TRAVIS_BUILD_NUMBER
