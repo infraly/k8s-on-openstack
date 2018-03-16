@@ -18,10 +18,8 @@ The following mandatory environment variables need to be set before calling `ans
 
 The following optional environment variables can also be set:
 
-  * `STATE`: set to `present` by default and must be set to `absent` to destroy the cluster
   * `NAME`: name of the Kubernetes cluster, used to derive instance names, `kubectl` configuration and security group name
   * `IMAGE`: name of an existing Ubuntu 16.04 image
-  * `NETWORK`: name of the network to which instances should be connected. Default to k8s.
   * `FLOATING_IP_POOL`: name of the floating IP pool
   * `FLOATING_IP_NETWORK_UUID`: uuid of the floating IP network (required for LBaaSv2)
   * `NODE_MEMORY`: how many MB of memory should nodes have, defaults to 4GB
@@ -40,7 +38,7 @@ $ ansible-playbook site.yaml
 Destroy the cluster:
 
 ```console
-$ STATE=absent ansible-playbook site.yaml
+$ ansible-playbook destroy.yaml
 ```
 
 CI/CD
@@ -57,6 +55,7 @@ Authors
 ------
 
   * François Deppierraz <francois.deppierraz@infraly.ch>
+  * Oli Schacher <oli.schacher@switch.ch>
   * Saverio Proto <saverio.proto@switch.ch>
 
 References

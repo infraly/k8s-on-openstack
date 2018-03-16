@@ -5,7 +5,6 @@
 - name: Create OpenStack instance
   os_server:
     security_groups: "sg-{{ name }}-nodes"
-    state: "{{ state }}"
     name: "{{ name }}-{{ item }}"
     image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
     key_name: "{{ lookup('env','KEY') }}"
@@ -21,7 +20,15 @@
       packages:
         - python
         - python-simplejson
+  when: state == "present"
   register: "instances"
+  with_sequence: count={{ node_count }}
+
+- name: Delete OpenStack instances
+  os_server:
+    name: "{{ name }}-{{ item }}"
+    state: absent
+  when: state == "absent"
   with_sequence: count={{ node_count }}
 
 - name: Delete security group
