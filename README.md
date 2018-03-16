@@ -49,13 +49,14 @@ The following environment variables needs to be defined:
   * `OS_AUTH_URL`
   * `OS_PASSWORD`
   * `OS_USERNAME`
+  * `OS_DOMAIN_NAME`
 
 Authors
 ------
 
   * François Deppierraz <francois.deppierraz@infraly.ch>
-  * Saverio Proto <saverio.proto@switch.ch>
   * Oli Schacher <oli.schacher@switch.ch>
+  * Saverio Proto <saverio.proto@switch.ch>
 
 References
 ----------
