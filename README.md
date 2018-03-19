@@ -41,6 +41,12 @@ Destroy the cluster:
 $ ansible-playbook destroy.yaml
 ```
 
+Prerequisites
+-------------
+
+  * Ansible (tested with version 2.4 but probably also works with older ones)
+  * Shade library required by Ansible OpenStack modules (`python-shade` for Debian)
+
 CI/CD
 -----
 
