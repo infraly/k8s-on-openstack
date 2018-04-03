@@ -13,7 +13,7 @@
     key_name: "{{ lookup('env','KEY') }}"
     flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
     nics:
-      - net-name: "{{ lookup('env', 'NETWORK') |  default('k8s', true) }}"
+      - net-name: "{{ lookup('env', 'NETWORK') |  default(lookup('env', 'NAME'), true) }}"
     floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
     userdata: |
       #cloud-config
