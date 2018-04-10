@@ -17,6 +17,11 @@
   set_fact:
     joincommand: "{{ joincommand.stdout }}"
 
+- name: Upload the openstack-cloud-controller-manager pod descriptor
+  copy:
+    dest: /etc/kubernetes/manifests/openstack-cloud-controller-manager-pod.yaml
+    src: files/openstack-cloud-controller-manager-pod.yaml
+
 - name: Configure kube-controller-manager cloud provider integration
   copy:
     dest: /etc/kubernetes/manifests/kube-controller-manager.yaml

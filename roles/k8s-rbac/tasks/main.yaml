@@ -1,0 +1,11 @@
+---
+- name: copy manifests
+  copy:
+    src: "{{ role_path }}/files/"
+    dest: "/home/ubuntu/manifests/"
+
+- name: kubectl apply RBAC roles
+  command: kubectl apply -f /home/ubuntu/manifests/cloud-controller-manager-roles.yaml
+
+- name: kubectl apply RBAC role bindings
+  command: kubectl apply -f /home/ubuntu/manifests/cloud-controller-manager-role-bindings.yaml

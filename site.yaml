@@ -82,6 +82,13 @@
   roles:
     - kubeadm-nodes
 
+- name: k8s rbac
+  hosts: master
+  tags:
+    - bootstrap
+  roles:
+    - k8s-rbac
+
 - name: k8s addons
   hosts: master
   tags:
