@@ -20,17 +20,8 @@ spec:
     - /etc/kubernetes/pki/apiserver.key
     - --keystone-url
     - {{ lookup('env','OS_AUTH_URL') | replace("v2.0","v3") }}
-    image: zioproto/k8s-keystone-auth
+    image: k8scloudprovider/k8s-keystone-auth
     imagePullPolicy: Always
-    #livenessProbe:
-    #  failureThreshold: 8
-    #  httpGet:
-    #    host: 127.0.0.1
-    #    path: /healthz
-    #    port: 6443
-    #    scheme: HTTPS
-    #  initialDelaySeconds: 15
-    #  timeoutSeconds: 15
     name: k8s-keystone-auth
     resources:
       requests:
