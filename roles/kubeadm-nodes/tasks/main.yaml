@@ -1,3 +1,8 @@
+- name: Check for existing kubelet configuration
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubelet_conf
+
 - name: mkdir /etc/kubernetes/pki/
   file: path=/etc/kubernetes/pki/ state=directory
 
@@ -7,6 +12,7 @@
     mode: 0644
 
 - name: kubeadm join
-  command: "kubeadm join --skip-preflight-checks --discovery-token-unsafe-skip-ca-verification --token {{ hostvars[groups.master[0]]['token'].stdout }} {{ hostvars[groups.master[0]]['ansible_default_ipv4']['address'] }}:6443"
+  command: "{{ hostvars[groups.master[0]]['joincommand'] }} --skip-preflight-checks"
   args:
     creates: /etc/kubernetes/kubelet.conf
+  when: kubelet_conf.stat.exists == False
