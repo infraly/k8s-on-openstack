@@ -16,6 +16,7 @@ env:
   MASTER_BOOT_FROM_VOLUME: False
 
 before_script:
+  - openstack token issue > /dev/null || (echo "No OpenStack credentials available, not running tests"; exit 1)
   - mkdir -p ~/.ssh
   - ssh-keygen -t rsa -P "" -f ~/.ssh/id_rsa
   - openstack keypair create --public-key ~/.ssh/id_rsa.pub ci-$TRAVIS_BUILD_NUMBER
