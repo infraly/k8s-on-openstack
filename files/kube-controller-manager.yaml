@@ -25,7 +25,9 @@ spec:
     - --allocate-node-cidrs=true
     - --cluster-cidr=10.96.0.0/16
     - --cloud-provider=external
-    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.10.2
+    - --allocate-node-cidrs=true
+    - --cluster-cidr=10.96.0.0/16
+    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.10.3
     livenessProbe:
       failureThreshold: 8
       httpGet:
