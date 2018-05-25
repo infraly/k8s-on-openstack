@@ -8,3 +8,6 @@
 
 - name: kubectl apply nginx-ingress-controller
   command: kubectl apply -f /home/ubuntu/manifests/nginx-ingress-controller.yaml
+
+- name: kubectl apply admin-user for dashboard
+  command: kubectl apply -f /home/ubuntu/manifests/admin-user.yaml
