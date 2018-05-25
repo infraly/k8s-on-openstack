@@ -84,8 +84,3 @@
   become: True
   shell: kubectl completion bash > /etc/bash_completion.d/kubectl
   when: kubectl_bash_completion.stat.exists == False
-
-- name: Fetch CA cert
-  fetch:
-    src: /etc/kubernetes/pki/ca.crt
-    dest: /tmp/
