@@ -5,31 +5,31 @@
 - name: Create OpenStack instance
   os_server:
     security_groups: "sg-{{ name }}-nodes"
-    name: "{{ name }}-{{ item }}"
-    image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
-    key_name: "{{ lookup('env','KEY') }}"
-    flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
+    name: "{{ nodes_name }}{{ item }}"
+    image: "{{ nodes_image }}"
+    key_name: "{{ key_name }}"
+    flavor_ram: "{{ nodes_flavor_ram }}"
     nics:
-      - net-name: "{{ lookup('env', 'NETWORK') |  default(lookup('env', 'NAME'), true) }}"
+      - net-name: "{{ network_name }}"
     auto_ip: false
     userdata: |
       #cloud-config
       package_upgrade: true
-      hostname: "{{ name }}-{{ item }}"
+      hostname: "{{ nodes_name }}{{ item }}"
       manage_etc_hosts: false
       packages:
         - python
         - python-simplejson
   when: state == "present"
   register: "instances"
-  with_sequence: count={{ node_count }}
+  with_sequence: count={{ nodes_count }}
 
 - name: Delete OpenStack instances
   os_server:
-    name: "{{ name }}-{{ item }}"
+    name: "{{ nodes_name }}{{ item }}"
     state: absent
   when: state == "absent"
-  with_sequence: count={{ node_count }}
+  with_sequence: count={{ nodes_count }}
 
 - name: Delete security group
   tags: bootstrap

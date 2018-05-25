@@ -5,20 +5,20 @@
 - name: Create OpenStack instance
   os_server:
     security_groups: "sg-{{ name }}-master"
-    name: "{{ name }}-master"
-    image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
-    boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
-    terminate_volume: "{{ lookup('env', 'MASTER_TERMINATE_VOLUME') | default('True', true) }}"
-    volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true) }}"
-    key_name: "{{ lookup('env','KEY') }}"
-    flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
+    name: "{{ master_name }}"
+    image: "{{ master_image }}"
+    boot_from_volume: "{{ master_boot_from_volume }}"
+    terminate_volume: "{{ master_terminate_volume }}"
+    volume_size: "{{ master_volume_size }}"
+    key_name: "{{ key_name }}"
+    flavor_ram: "{{ master_flavor_ram }}"
     nics:
-      - net-name: "{{ lookup('env', 'NETWORK') |  default(lookup('env', 'NAME'), true) }}"
-    floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
+      - net-name: "{{ network_name }}"
+    floating_ip_pools: "{{ floating_ip_pools }}"
     userdata: |
       #cloud-config
       package_upgrade: true
-      hostname: "{{ name }}-master"
+      hostname: "{{ master_name }}"
       manage_etc_hosts: false
       packages:
         - python
@@ -28,7 +28,7 @@
 
 - name: Delete OpenStack instances
   os_server:
-    name: "{{ name }}-master"
+    name: "{{ master_name }}"
     state: absent
   when: state == "absent"
 
