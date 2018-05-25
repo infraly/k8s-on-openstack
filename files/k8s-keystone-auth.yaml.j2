@@ -20,7 +20,7 @@ spec:
     - /etc/kubernetes/pki/apiserver.key
     - --keystone-url
     - {{ lookup('env','OS_AUTH_URL') | replace("v2.0","v3") }}
-    image: k8scloudprovider/k8s-keystone-auth
+    image: k8scloudprovider/k8s-keystone-auth:v0.1.0
     imagePullPolicy: Always
     name: k8s-keystone-auth
     resources:
