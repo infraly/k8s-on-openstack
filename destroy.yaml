@@ -4,8 +4,6 @@
   pre_tasks:
     - name: Set variables
       set_fact:
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
         state: absent
 
   roles:
@@ -15,19 +13,19 @@
 
   tasks:
     - name: clear static routes
-      shell: openstack router set --no-route "{{ lookup('env','NAME') | default('k8s', true) }}"
+      shell: openstack router set --no-route "{{ router_name }}"
 
     - name: delete router
       os_router:
         state: absent
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        name: "{{ router_name }}"
 
     - name: delete network
       os_network:
         state: absent
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        name: "{{ network_name }}"
 
     - name: delete subnet
       os_subnet:
         state: absent
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        name: "{{ network_name }}"

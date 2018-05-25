@@ -1,0 +1,21 @@
+key_name: "{{ lookup('env','KEY') }}"
+
+name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+
+network_name: "{{ lookup('env','NETWORK') | default(name, true) }}"
+subnet_name: "{{ lookup('env','NETWORK') | default(name, true) }}"
+router_name: "{{ lookup('env','NAME') | default(name, true) }}"
+floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
+external_network_name: "{{ lookup('env', 'EXTERNAL_NETWORK') | default('public', true) }}"
+
+master_name: "{{ name }}-master"
+master_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+master_flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
+master_boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
+master_terminate_volume: "{{ lookup('env', 'MASTER_TERMINATE_VOLUME') | default('True', true) }}"
+master_volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true) }}"
+
+nodes_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
+nodes_name: "{{ name }}-" # node id will automatically be appended
+nodes_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"

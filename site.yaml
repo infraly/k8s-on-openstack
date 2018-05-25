@@ -4,12 +4,12 @@
   pre_tasks:
     - name: create network
       os_network:
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        name: "{{ name }}"
 
     - name: create subnet
       os_subnet:
-        network_name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
+        network_name: "{{ network_name }}"
+        name: "{{ subnet_name }}"
         cidr: 10.8.10.0/24
         dns_nameservers:
           - 8.8.8.8
@@ -18,17 +18,15 @@
 
     - name: create router
       os_router:
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
-        network: "{{ lookup('env', 'EXTERNAL_NETWORK') | default('public', true) }}"
+        name: "{{ router_name }}"
+        network: "{{ external_network_name }}"
         interfaces:
-          - "{{ lookup('env','NAME') | default('k8s', true) }}"
+          - "{{ network_name }}"
       register: router
 
     - name: Set variables
       set_fact:
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         state: present
-        node_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
         routeruuid: "{{ router.id }}"
         subnetuuid: "{{ subnet.id }}"
   roles:
@@ -40,7 +38,6 @@
   pre_tasks:
     - name: Set variables
       set_fact:
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
         state: present
   tags:
     - bootstrap
@@ -55,10 +52,6 @@
 
 - name: Nodes preparation
   hosts: nodes
-  pre_tasks:
-    - name: Set variables
-      set_fact:
-        name: "{{ lookup('env','NAME') | default('k8s', true) }}"
   tags:
     - bootstrap
   gather_facts: false
