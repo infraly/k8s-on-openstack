@@ -4,7 +4,7 @@
   register: kubelet_conf
 
 - name: kubeadm join
-  command: "{{ hostvars[groups.master[0]]['joincommand'] }} --skip-preflight-checks"
+  command: "{{ hostvars[groups.master[0]]['joincommand'] }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
   when: kubelet_conf.stat.exists == False
