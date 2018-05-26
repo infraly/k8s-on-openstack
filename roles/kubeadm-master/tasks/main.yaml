@@ -4,7 +4,7 @@
   register: kubelet_conf
 
 - name: kubeadm init
-  command: "kubeadm init --skip-preflight-checks --kubernetes-version v1.10.2 --apiserver-advertise-address {{ hostvars[groups.master[0]].ansible_ssh_host }}"
+  command: "kubeadm init --kubernetes-version v1.10.2 --apiserver-advertise-address {{ hostvars[groups.master[0]].ansible_ssh_host }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
   when: kubelet_conf.stat.exists == False
