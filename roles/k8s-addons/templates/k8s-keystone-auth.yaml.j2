@@ -20,7 +20,9 @@ spec:
     - /etc/kubernetes/pki/apiserver.key
     - --keystone-url
     - {{ lookup('env','OS_AUTH_URL') | replace("v2.0","v3") }}
-    image: k8scloudprovider/k8s-keystone-auth:v0.1.0
+    - --policy-configmap-name
+    - k8s-auth-policy
+    image: lingxiankong/k8s-keystone-auth:configmap-on-the-fly
     imagePullPolicy: Always
     name: k8s-keystone-auth
     resources:
@@ -33,6 +35,13 @@ spec:
     - mountPath: /etc/ssl/certs
       name: ca-certs
       readOnly: true
+  serviceAccount: admin-user
+  serviceAccountName: admin-user
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+  tolerations:
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
   hostNetwork: true
   volumes:
   - hostPath:

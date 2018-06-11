@@ -9,3 +9,7 @@
 
 - name: kubectl apply RBAC role bindings
   command: kubectl apply -f /home/ubuntu/manifests/cloud-controller-manager-role-bindings.yaml
+
+- name: apply k8s-auth-policy.yaml
+  command: kubectl apply -f /home/ubuntu/manifests/k8s-auth-policy.yaml
+
