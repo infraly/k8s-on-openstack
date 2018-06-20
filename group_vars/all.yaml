@@ -19,3 +19,5 @@ nodes_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
 nodes_name: "{{ name }}-" # node id will automatically be appended
 nodes_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
 nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
+nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }}"
+nodes_delete_fip: "{{ lookup('env', 'NODE_DELETE_FIP') | default ('True', true) }}"

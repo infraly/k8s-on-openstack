@@ -11,7 +11,8 @@
     flavor_ram: "{{ nodes_flavor_ram }}"
     nics:
       - net-name: "{{ network_name }}"
-    auto_ip: false
+    auto_ip: "{{ nodes_auto_ip }}"
+    delete_fip: "{{ nodes_delete_fip }}"
     userdata: |
       #cloud-config
       package_upgrade: true
