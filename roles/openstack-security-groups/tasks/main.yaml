@@ -12,18 +12,87 @@
     state: present
   when: state == "present"
 
-- name: Allow traffic to master from anywhere IPv4
+- name: Allow SSH to master from anywhere IPv4
   tags: bootstrap
   os_security_group_rule:
     security_group: "sg-{{ name }}-master"
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
     remote_ip_prefix: 0.0.0.0/0
   when: state == "present"
 
-- name: Allow traffic to master from anywhere IPv6
+- name: Allow SSH to master from anywhere IPv6
   tags: bootstrap
   os_security_group_rule:
     security_group: "sg-{{ name }}-master"
     ethertype: IPv6
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
+    remote_ip_prefix: ::/0
+  when: state == "present"
+
+- name: Allow K8S API to master from anywhere IPv4
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    protocol: tcp
+    port_range_min: 6443
+    port_range_max: 6443
+    remote_ip_prefix: 0.0.0.0/0
+  when: state == "present"
+
+- name: Allow K8S API to master from anywhere IPv6
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    ethertype: IPv6
+    protocol: tcp
+    port_range_min: 6443
+    port_range_max: 6443
+    remote_ip_prefix: ::/0
+  when: state == "present"
+
+- name: Allow HTTP to master from anywhere IPv4
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    protocol: tcp
+    port_range_min: 80
+    port_range_max: 80
+    remote_ip_prefix: 0.0.0.0/0
+  when: state == "present"
+
+- name: Allow HTTP to master from anywhere IPv6
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    ethertype: IPv6
+    protocol: tcp
+    port_range_min: 80
+    port_range_max: 80
+    remote_ip_prefix: ::/0
+  when: state == "present"
+
+- name: Allow HTTPS to master from anywhere IPv4
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    protocol: tcp
+    port_range_min: 443
+    port_range_max: 443
+    remote_ip_prefix: 0.0.0.0/0
+  when: state == "present"
+
+- name: Allow HTTPS to master from anywhere IPv6
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-master"
+    ethertype: IPv6
+    protocol: tcp
+    port_range_min: 443
+    port_range_max: 443
     remote_ip_prefix: ::/0
   when: state == "present"
 
@@ -34,19 +103,24 @@
     remote_group: "sg-{{ name }}-nodes"
   when: state == "present"
 
-
-- name: Allow traffic to nodes from anywhere IPv4
+- name: Allow SSH to nodes from anywhere IPv4
   tags: bootstrap
   os_security_group_rule:
     security_group: "sg-{{ name }}-nodes"
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
     remote_ip_prefix: 0.0.0.0/0
   when: state == "present"
 
-- name: Allow traffic to nodes from anywhere IPv6
+- name: Allow SSH to nodes from anywhere IPv6
   tags: bootstrap
   os_security_group_rule:
     security_group: "sg-{{ name }}-nodes"
     ethertype: IPv6
+    protocol: tcp
+    port_range_min: 22
+    port_range_max: 22
     remote_ip_prefix: ::/0
   when: state == "present"
 
