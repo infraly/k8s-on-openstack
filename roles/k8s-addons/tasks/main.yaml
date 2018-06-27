@@ -18,5 +18,11 @@
 - name: kubectl apply admin-user for dashboard
   command: kubectl apply -f /home/ubuntu/manifests/admin-user.yaml
 
+- name: copy syncconfig.yaml
+  become: true
+  copy:
+   src: "{{ role_path }}/files/syncconfig.yaml"
+   dest: "/etc/kubernetes/syncconfig.yaml"
+
 - name: kubectl apply k8s-keystone-auth
   command: kubectl apply -f /home/ubuntu/manifests/k8s-keystone-auth.yaml

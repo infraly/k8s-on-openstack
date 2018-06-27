@@ -22,14 +22,16 @@ spec:
     - {{ lookup('env','OS_AUTH_URL') | replace("v2.0","v3") }}
     - --policy-configmap-name
     - k8s-auth-policy
-    image: lingxiankong/k8s-keystone-auth:configmap-on-the-fly
+    - --sync-config-file
+    - /etc/kubernetes/syncconfig.yaml
+    image: zioproto/k8s-keystone-auth:e0fce6d3-dirty
     imagePullPolicy: Always
     name: k8s-keystone-auth
     resources:
       requests:
         cpu: 250m
     volumeMounts:
-    - mountPath: /etc/kubernetes/pki
+    - mountPath: /etc/kubernetes
       name: k8s-certs
       readOnly: true
     - mountPath: /etc/ssl/certs
@@ -45,7 +47,7 @@ spec:
   hostNetwork: true
   volumes:
   - hostPath:
-      path: /etc/kubernetes/pki
+      path: /etc/kubernetes
       type: DirectoryOrCreate
     name: k8s-certs
   - hostPath:
