@@ -2,7 +2,7 @@
   tags: bootstrap
   os_client_config:
 
-- name: Create OpenStack instance
+- name: Create OpenStack instance through flavor ram
   os_server:
     security_groups: "sg-{{ name }}-master"
     name: "{{ master_name }}"
@@ -23,8 +23,36 @@
       packages:
         - python
         - python-simplejson
-  when: state == "present"
-  register: "instance"
+  when: state == "present" and not master_flavor_name
+  register: "instance_from_ram"
+
+- name: Create OpenStack instance through flavor name
+  os_server:
+    security_groups: "sg-{{ name }}-master"
+    name: "{{ master_name }}"
+    image: "{{ master_image }}"
+    boot_from_volume: "{{ master_boot_from_volume }}"
+    terminate_volume: "{{ master_terminate_volume }}"
+    volume_size: "{{ master_volume_size }}"
+    key_name: "{{ key_name }}"
+    flavor: "{{ master_flavor_name }}"
+    nics:
+      - net-name: "{{ network_name }}"
+    floating_ip_pools: "{{ floating_ip_pools }}"
+    userdata: |
+      #cloud-config
+      package_upgrade: true
+      hostname: "{{ master_name }}"
+      manage_etc_hosts: false
+      packages:
+        - python
+        - python-simplejson
+  when: state == "present" and master_flavor_name
+  register: "instance_from_name"
+
+- name: Agregate master instance facts
+  set_fact:
+    instance: "{{ instance_from_ram if not nodes_flavor_name else instance_from_name }}"
 
 - name: Delete OpenStack instances
   os_server:
