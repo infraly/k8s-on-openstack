@@ -24,6 +24,7 @@ The following optional environment variables can also be set:
   * `FLOATING_IP_POOL`: name of the floating IP pool
   * `FLOATING_IP_NETWORK_UUID`: uuid of the floating IP network (required for LBaaSv2)
   * `NODE_MEMORY`: how many MB of memory should nodes have, defaults to 4GB
+  * `NODE_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the nodes. When set, the `NODE_MEMORY` setting is ignored.
   * `NODE_COUNT`: how many nodes should we provision, defaults to 3
   * `NODE_AUTO_IP` assign a floating IP to nodes, defaults to False
   * `NODE_DELETE_FIP`: delete floating IP when node is destroyed, defaults to True
@@ -31,7 +32,8 @@ The following optional environment variables can also be set:
   * `MASTER_TERMINATE_VOLUME`: delete the volume when master instance is destroy, defaults to True
   * `MASTER_VOLUME_SIZE`: size of the master volume
   * `MASTER_MEMORY`: how many MB of memory should master have, defaults to 4 GB
-
+  * `MASTER_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the master. When set, the `MASTER_MEMORY` setting is ignored.
+  
 Spin up a new cluster:
 
 ```console
