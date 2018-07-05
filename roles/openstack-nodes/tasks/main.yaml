@@ -2,13 +2,14 @@
   tags: bootstrap
   os_client_config:
 
-- name: Create OpenStack instance through flavor ram
+- name: Create OpenStack instance
   os_server:
     security_groups: "sg-{{ name }}-nodes"
     name: "{{ nodes_name }}{{ item }}"
     image: "{{ nodes_image }}"
     key_name: "{{ key_name }}"
-    flavor_ram: "{{ nodes_flavor_ram }}"
+    flavor_ram: "{{ nodes_flavor_ram if not nodes_flavor_name else omit }}"
+    flavor: "{{ nodes_flavor_name if nodes_flavor_name else omit }}"
     nics:
       - net-name: "{{ network_name }}"
     auto_ip: "{{ nodes_auto_ip }}"
@@ -21,31 +22,8 @@
       packages:
         - python
         - python-simplejson
-  when: state == "present" and not nodes_flavor_name
-  register: "instances_from_ram"
-  with_sequence: count={{ nodes_count }}
-
-- name: Create OpenStack instance through flavor name
-  os_server:
-    security_groups: "sg-{{ name }}-nodes"
-    name: "{{ nodes_name }}{{ item }}"
-    image: "{{ nodes_image }}"
-    key_name: "{{ key_name }}"
-    flavor: "{{ nodes_flavor_name }}"
-    nics:
-      - net-name: "{{ network_name }}"
-    auto_ip: "{{ nodes_auto_ip }}"
-    delete_fip: "{{ nodes_delete_fip }}"
-    userdata: |
-      #cloud-config
-      package_upgrade: true
-      hostname: "{{ nodes_name }}{{ item }}"
-      manage_etc_hosts: false
-      packages:
-        - python
-        - python-simplejson
-  when: state == "present" and nodes_flavor_name
-  register: "instances_from_name"
+  when: state == "present"
+  register: "instances"
   with_sequence: count={{ nodes_count }}
 
 - name: Delete OpenStack instances
@@ -61,10 +39,6 @@
     name: "sg-{{ name }}"
     state: absent
   when: state == "absent"
-
-- name: Agregate master instance facts
-  set_fact:
-    instances: "{{ instances_from_ram if not nodes_flavor_name else instances_from_name }}"
 
 - name: Update inventory
   add_host:
