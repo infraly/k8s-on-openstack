@@ -32,10 +32,17 @@
     dest: /etc/kubernetes/pki/webhook.kubeconfig.yaml
     src: files/webhook.kubeconfig.yaml
 
+- name: Ensure --authorization-mode has Webhook mode
+  lineinfile:
+    state: present
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: '.*--authorization-mode=.*'
+    line: "    - --authorization-mode=Node,Webhook,RBAC"
+
 - name: Configure keystone integration
   blockinfile:
     insertbefore: 'image: '
-    block: "    - --authentication-token-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --authorization-mode=Node,Webhook,RBAC\n    - --authorization-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml"
+    block: "    - --authentication-token-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --authorization-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml"
     path: /etc/kubernetes/manifests/kube-apiserver.yaml
 
 - name: In case of upgrade make sure container versions are right for kube-apiserver
