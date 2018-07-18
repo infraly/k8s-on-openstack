@@ -23,3 +23,7 @@ nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
 nodes_flavor_name: "{{ lookup('env','NODE_FLAVOR') | default(false) }}"
 nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }}"
 nodes_delete_fip: "{{ lookup('env', 'NODE_DELETE_FIP') | default ('True', true) }}"
+
+#Change at your own risk
+kubernetes_version: v1.11.1
+kubernetes_ubuntu_version: 1.11.1-00

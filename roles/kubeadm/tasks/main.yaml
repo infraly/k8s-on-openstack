@@ -26,10 +26,10 @@
     update_cache: yes
   with_items:
     - docker-engine=1.12.6-0~ubuntu-xenial
-    - kubelet=1.10.3-00
-    - kubeadm=1.10.3-00
-    - kubectl=1.10.3-00
-    - kubernetes-cni=0.6.0-00
+    - "kubelet={{ kubernetes_ubuntu_version }}"
+    - "kubeadm={{ kubernetes_ubuntu_version }}"
+    - "kubectl={{ kubernetes_ubuntu_version }}"
+    - "kubernetes-cni=0.6.0-00"
 
 - name: configure docker to use journald
   copy:
