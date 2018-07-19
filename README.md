@@ -33,7 +33,7 @@ The following optional environment variables can also be set:
   * `MASTER_VOLUME_SIZE`: size of the master volume
   * `MASTER_MEMORY`: how many MB of memory should master have, defaults to 4 GB
   * `MASTER_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the master. When set, the `MASTER_MEMORY` setting is ignored.
-  
+
 Spin up a new cluster:
 
 ```console
@@ -44,6 +44,16 @@ Destroy the cluster:
 
 ```console
 $ ansible-playbook destroy.yaml
+```
+
+Upgrade the cluster:
+
+The `upgrade.yaml` playbook implements the upgrade steps described in https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-1-11/
+After editing in `group_vars/all.yaml` the `kubernetes_version` and `kubernetes_ubuntu_version` variables, you can run the following commands.
+
+```console
+$ ansible-playbook upgrade.yaml
+$ ansible-playbook site.yaml
 ```
 
 Prerequisites
