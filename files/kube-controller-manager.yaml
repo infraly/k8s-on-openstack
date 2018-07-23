@@ -22,11 +22,12 @@ spec:
     - --controllers=*,bootstrapsigner,tokencleaner
     - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
     - --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
-    - --cloud-provider=openstack
-    - --cloud-config=/etc/kubernetes/cloud-config
     - --allocate-node-cidrs=true
     - --cluster-cidr=10.96.0.0/16
-    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.10.2
+    - --cloud-provider=external
+    - --allocate-node-cidrs=true
+    - --cluster-cidr=10.96.0.0/16
+    image: gcr.io/google_containers/kube-controller-manager-amd64:v1.10.3
     livenessProbe:
       failureThreshold: 8
       httpGet:
