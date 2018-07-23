@@ -18,6 +18,10 @@
 - name: kubectl apply admin-user for dashboard
   command: kubectl apply -f /home/ubuntu/manifests/admin-user.yaml
 
+- name: include helm
+  include: helm.yaml
+  when: helm_include
+
 - name: copy syncconfig.yaml
   become: true
   copy:
