@@ -37,3 +37,12 @@
   until: tillerdeployment.rc == 0
   retries: 10
   delay: 2
+
+- name: install helm charts
+  ignore_errors: yes
+  command: helm install {{ item }}
+  register: result
+  retries: 30
+  delay: 2
+  until: result.rc == 0
+  with_items: "{{ helm_install }}"
