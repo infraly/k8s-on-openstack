@@ -44,6 +44,17 @@
   notify:
     - Restart docker
 
+- name: dont write docker logs to /var/log/syslog
+  copy:
+    content: |
+      if $programname == 'dockerd' or $syslogtag == 'dockerd' then /dev/null
+      & stop
+    dest: "/etc/rsyslog.d/30-docker.conf"
+    mode: 0644
+    owner: root
+    group: root
+  notify: "restart rsyslog"
+
 - name: add hosts
   lineinfile:
     dest: "/etc/hosts"
