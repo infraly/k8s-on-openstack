@@ -26,7 +26,7 @@
 - name: add repos to helm
   ignore_errors: yes
   command: helm repo add {{ item }}
-  with_items: "{{ helm_repos }}"
+  when: item|length > 0
 
 - name: update the helm repos
   command: helm repo update
@@ -46,4 +46,4 @@
   retries: 30
   delay: 2
   until: result.rc == 0
-  with_items: "{{ helm_install }}"
+  when: item|length > 0
