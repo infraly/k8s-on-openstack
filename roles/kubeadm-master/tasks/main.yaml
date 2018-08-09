@@ -27,21 +27,21 @@
     insertbefore: 'image: '
     block: "    - --cloud-provider=external\n    - --cluster-cidr=10.96.0.0/16\n    - --allocate-node-cidrs=true"
     path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    marker: "#ANSIBLE BLOCK 1"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDPROVIDER"
 
 - name: Configure kube-controller-manager cloud provider integration Step2
   blockinfile:
     insertafter: 'volumeMounts:'
     block: "    - mountPath: /etc/kubernetes/cloud-config\n      name: cloud-config\n      readOnly: true"
     path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    marker: "#ANSIBLE BLOCK 2"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDCONFIG"
 
 - name: Configure kube-controller-manager cloud provider integration Step3
   blockinfile:
     insertbefore: 'status: '
     block: "  - hostPath:\n      path: /etc/kubernetes/cloud-config\n      type: FileOrCreate\n    name: cloud-config"
     path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    marker: "#ANSIBLE BLOCK 3"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK HOSTPATH"
 
 - name: Upload webook kubeconfig file
   copy:
