@@ -36,7 +36,7 @@ The following optional environment variables can also be set:
   * `INCLUDE_HELM`: installs helm to the cluster, defaults to False
   * `HELM_REPOS`: a list of additional helm repos to add, separated by semicolons. Example: `charts* https://github.com/helm/charts;mycharts https://github.com/dev/mycharts`
   * `HELM_INSTALL`: a list of helm charts and their parameters to install, separated by semicolons. Example: `mycharts/mychart;charts/somechart --name somechart --namespace somenamespace`
-  
+
 Spin up a new cluster:
 
 ```console
@@ -47,6 +47,16 @@ Destroy the cluster:
 
 ```console
 $ ansible-playbook destroy.yaml
+```
+
+Upgrade the cluster:
+
+The `upgrade.yaml` playbook implements the upgrade steps described in https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-1-11/
+After editing in `group_vars/all.yaml` the `kubernetes_version` and `kubernetes_ubuntu_version` variables, you can run the following commands.
+
+```console
+$ ansible-playbook upgrade.yaml
+$ ansible-playbook site.yaml
 ```
 
 Prerequisites
@@ -71,6 +81,7 @@ Authors
   * François Deppierraz <francois.deppierraz@infraly.ch>
   * Oli Schacher <oli.schacher@switch.ch>
   * Saverio Proto <saverio.proto@switch.ch>
+  * @HaseHarald
 
 References
 ----------

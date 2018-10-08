@@ -9,3 +9,9 @@
     state: restarted
     daemon_reload: yes
     name: docker
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+

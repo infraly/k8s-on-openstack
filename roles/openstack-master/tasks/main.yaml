@@ -39,8 +39,8 @@
     ansible_ssh_host: "{{ instance.openstack.accessIPv4 }}"
     ansible_ssh_user: ubuntu
     groupname: master
-    routeruuid: "{{ routeruuid }}"
-    subnetuuid: "{{ subnetuuid }}"
+    routeruuid: "{{ routeruuid | default('None',true) }}"
+    subnetuuid: "{{ subnetuuid | default('None',true) }}"
   when: state == "present"
 
 - name: Wait during instances boot

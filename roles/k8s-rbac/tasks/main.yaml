@@ -4,6 +4,15 @@
     src: "{{ role_path }}/files/"
     dest: "/home/ubuntu/manifests/"
 
+- name: Wait for API server to be up
+  shell: "/usr/bin/kubectl get nodes"
+  register: api_server_up
+  retries: 30
+  delay: 10
+  until: api_server_up | success
+  tags:
+    - skip_ansible_lint
+
 - name: kubectl apply RBAC roles
   command: kubectl apply -f /home/ubuntu/manifests/cloud-controller-manager-roles.yaml
 
