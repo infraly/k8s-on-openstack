@@ -33,6 +33,9 @@ The following optional environment variables can also be set:
   * `MASTER_VOLUME_SIZE`: size of the master volume
   * `MASTER_MEMORY`: how many MB of memory should master have, defaults to 4 GB
   * `MASTER_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the master. When set, the `MASTER_MEMORY` setting is ignored.
+  * `INCLUDE_HELM`: installs helm to the cluster, defaults to False
+  * `HELM_REPOS`: a list of additional helm repos to add, separated by semicolons. Example: `charts* https://github.com/helm/charts;mycharts https://github.com/dev/mycharts`
+  * `HELM_INSTALL`: a list of helm charts and their parameters to install, separated by semicolons. Example: `mycharts/mychart;charts/somechart --name somechart --namespace somenamespace`
 
 Spin up a new cluster:
 
@@ -78,6 +81,7 @@ Authors
   * François Deppierraz <francois.deppierraz@infraly.ch>
   * Oli Schacher <oli.schacher@switch.ch>
   * Saverio Proto <saverio.proto@switch.ch>
+  * @HaseHarald
 
 References
 ----------
