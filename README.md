@@ -28,9 +28,15 @@ The following optional environment variables can also be set:
   * `NODE_COUNT`: how many nodes should we provision, defaults to 3
   * `NODE_AUTO_IP` assign a floating IP to nodes, defaults to False
   * `NODE_DELETE_FIP`: delete floating IP when node is destroyed, defaults to True
+  * `NODE_BOOT_FROM_VOLUME`: boot node instances using boot from volume. Useful on clouds with only boot from volume
+  * `NODE_TERMINATE_VOLUME`: delete the root volume when each node instance is destroy, defaults to True
+  * `NODE_VOLUME_SIZE`: size of each node volume. defaults to 64GB
+  * `NODE_EXTRA_VOLUME`: create an extra unmounted data volume for each node, defaults to False
+  * `NODE_EXTRA_VOLUME_SIZE`: size of extra data volume for each node, defaults to 80GB
+  * `NODE_DELETE_EXTRA_VOLUME`: delete the extra data volume for each node when node is destroy, defaults to True
   * `MASTER_BOOT_FROM_VOLUME`: boot the master instance on a volume for data persistence, defaults to True
   * `MASTER_TERMINATE_VOLUME`: delete the volume when master instance is destroy, defaults to True
-  * `MASTER_VOLUME_SIZE`: size of the master volume
+  * `MASTER_VOLUME_SIZE`: size of the master volume. default to 64GB
   * `MASTER_MEMORY`: how many MB of memory should master have, defaults to 4 GB
   * `MASTER_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the master. When set, the `MASTER_MEMORY` setting is ignored.
   * `INCLUDE_HELM`: installs helm to the cluster, defaults to False
