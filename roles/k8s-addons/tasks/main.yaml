@@ -6,6 +6,9 @@
     src: "{{ role_path }}/files/manifests/"
     dest: "/home/ubuntu/manifests/"
 
+- name: Retrieve service catalog
+  delegate_to: localhost
+  os_auth:
 
 - name: Upload webook kubeconfig file
   template:

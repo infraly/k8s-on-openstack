@@ -30,7 +30,7 @@ spec:
             - --tls-private-key-file
             - /etc/kubernetes/pki/apiserver.key
             - --keystone-url
-            - {{ lookup('env','OS_AUTH_URL') | replace("v2.0","v3") }}
+            - {{ ((service_catalog | selectattr('type', 'equalto', 'identity') | list)[0]['endpoints'] | selectattr('interface', 'equalto', 'public') | list)[0]['url'] }}
             - --policy-configmap-name
             - k8s-auth-policy
             - --sync-config-file
