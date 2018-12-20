@@ -19,6 +19,15 @@
     repo: deb http://apt.dockerproject.org/repo ubuntu-xenial main
     state: present
 
+- name: Unhold docker and kubernetes packages
+  command: "apt-mark unhold {{ item }}"
+  with_items:
+    - docker-engine
+    - kubelet
+    - kubeadm
+    - kubectl
+    - kubernetes-cni
+
 - name: Install docker and kubernetes packages
   apt:
     name: "{{item}}"
@@ -30,6 +39,15 @@
     - "kubeadm={{ kubernetes_ubuntu_version }}"
     - "kubectl={{ kubernetes_ubuntu_version }}"
     - "kubernetes-cni=0.6.0-00"
+
+- name: Hold docker and kubernetes packages
+  command: "apt-mark hold {{ item }}"
+  with_items:
+    - docker-engine
+    - kubelet
+    - kubeadm
+    - kubectl
+    - kubernetes-cni
 
 - name: configure docker to use journald
   copy:
