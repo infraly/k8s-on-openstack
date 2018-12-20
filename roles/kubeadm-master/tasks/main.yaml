@@ -25,7 +25,7 @@
 - name: Configure kube-controller-manager cloud provider integration Step1
   blockinfile:
     insertbefore: 'image: '
-    block: "    - --cloud-provider=external\n    - --cluster-cidr=10.96.0.0/16\n    - --allocate-node-cidrs=true"
+    block: "    - --cloud-provider=external\n    - --cluster-cidr=10.96.0.0/16\n    - --allocate-node-cidrs=true\n    - --external-cloud-volume-plugin=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
     path: /etc/kubernetes/manifests/kube-controller-manager.yaml
     marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDPROVIDER"
 
@@ -55,11 +55,25 @@
     regexp: '.*--authorization-mode=.*'
     line: "    - --authorization-mode=Node,Webhook,RBAC"
 
-- name: Configure keystone integration
+- name: Configure apiserver cloud provider integration
   blockinfile:
     insertbefore: 'image: '
-    block: "    - --authentication-token-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --authorization-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml"
+    block: "    - --authentication-token-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --authorization-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --cloud-provider=external"
     path: /etc/kubernetes/manifests/kube-apiserver.yaml
+
+- name: Configure apiserver cloud provider integration Step2
+  blockinfile:
+    insertafter: 'volumeMounts:'
+    block: "    - mountPath: /etc/kubernetes/cloud-config\n      name: cloud-config\n      readOnly: true"
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDCONFIG"
+
+- name: Configure apiserver cloud provider integration Step3
+  blockinfile:
+    insertbefore: 'status: '
+    block: "  - hostPath:\n      path: /etc/kubernetes/cloud-config\n      type: FileOrCreate\n    name: cloud-config"
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    marker: "# {mark} ANSIBLE MANAGED BLOCK HOSTPATH"
 
 - name: In case of upgrade make sure container versions are right for kube-apiserver
   replace:

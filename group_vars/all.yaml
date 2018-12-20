@@ -8,6 +8,8 @@ router_name: "{{ lookup('env','NAME') | default(name, true) }}"
 floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
 external_network_name: "{{ lookup('env', 'EXTERNAL_NETWORK') | default('public', true) }}"
 use_octavia: "{{ lookup('env', 'USE_OCTAVIA') | default('False', true) | bool }}"
+block_storage_version: "{{ lookup('env', 'BLOCK_STORAGE_VERSION') | default('v2', true) }}"
+ignore_volume_az: "{{ lookup('env', 'IGNORE_VOLUME_AZ') | default('false', true) | bool }}"
 
 master_name: "{{ name }}-master"
 master_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"

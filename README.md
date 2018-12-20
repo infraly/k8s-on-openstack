@@ -24,6 +24,8 @@ The following optional environment variables can also be set:
   * `FLOATING_IP_POOL`: name of the floating IP pool
   * `FLOATING_IP_NETWORK_UUID`: uuid of the floating IP network (required for LBaaSv2)
   * `USE_OCTAVIA`: try to use Octavia instead of Neutron LBaaS, defaults to False
+  * `BLOCK_STORAGE_VERSION`: version of the block storage (Cinder) service, defaults to 'v2'
+  * `IGNORE_VOLUME_AZ`: whether to ignore the AZ field of volumes, needed on some clouds where AZs confuse the driver, defaults to False.
   * `NODE_MEMORY`: how many MB of memory should nodes have, defaults to 4GB
   * `NODE_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the nodes. When set, the `NODE_MEMORY` setting is ignored.
   * `NODE_COUNT`: how many nodes should we provision, defaults to 3
