@@ -23,6 +23,15 @@ nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
 nodes_flavor_name: "{{ lookup('env','NODE_FLAVOR') | default(false) }}"
 nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }}"
 nodes_delete_fip: "{{ lookup('env', 'NODE_DELETE_FIP') | default ('True', true) }}"
+# Some clouds only support boot from volume - use it even for ephemeral nodes
+nodes_boot_from_volume: "{{ lookup('env', 'NODE_BOOT_FROM_VOLUME') | default('False', true) }}"
+nodes_terminate_volume: "{{ lookup('env', 'NODE_TERMINATE_VOLUME') | default('True', true) }}"
+nodes_volume_size: "{{ lookup('env', 'NODE_VOLUME_SIZE') | default('64', true) }}"
+# Whether to attach a data volume to each node. Useful when running Ceph via rook
+nodes_extra_volume: "{{ lookup('env', 'NODE_EXTRA_VOLUME') | default('True', true) }}"
+nodes_extra_volume_name: "{{ name }}-data-" # node id will automatically be appended
+nodes_extra_volume_size: "{{ lookup('env', 'NODE_EXTRA_VOLUME_SIZE') | default('80', true) }}"
+nodes_delete_extra_volume: "{{ lookup('env', 'NODE_DELETE_EXTRA_VOLUME') | default('True', true) }}"
 
 helm_include: "{{ lookup('env', 'INCLUDE_HELM') | default(false) }}"
 helm_repos: "{{ lookup('env', 'HELM_REPOS').split(';') | default([], true) }}"
