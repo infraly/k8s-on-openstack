@@ -138,6 +138,17 @@
     remote_group: "sg-{{ name }}-master"
   when: state == "present"
 
+- name: Allow load balancer traffic to nodes
+  tags: bootstrap
+  os_security_group_rule:
+    security_group: "sg-{{ name }}-nodes"
+    remote_ip_prefix: 10.8.10.0/24
+    protocol: tcp
+    port_range_min: 30000
+    port_range_max: 32767
+  when:
+  - state == "present"
+  - use_octavia
 
 - name: Delete master security group
   tags: bootstrap
