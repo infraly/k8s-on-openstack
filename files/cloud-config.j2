@@ -28,6 +28,9 @@ lb-version = v2
 floating-network-id = {{ lookup('env', 'FLOATING_IP_NETWORK_UUID') }}
 subnet-id = {{ hostvars[groups.master[0]]['subnetuuid'] }}
 create-monitor = yes
+{% if hostvars[groups.master[0]]['use_octavia'] %}
+use-octavia = yes
+{% endif %}
 monitor-delay = 1m
 monitor-timeout = 30s
 monitor-max-retries = 3

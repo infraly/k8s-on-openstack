@@ -10,6 +10,9 @@
     key_name: "{{ key_name }}"
     flavor_ram: "{{ nodes_flavor_ram if not nodes_flavor_name else omit }}"
     flavor: "{{ nodes_flavor_name if nodes_flavor_name else omit }}"
+    boot_from_volume: "{{ nodes_boot_from_volume }}"
+    terminate_volume: "{{ nodes_terminate_volume }}"
+    volume_size: "{{ nodes_volume_size }}"
     nics:
       - net-name: "{{ network_name }}"
     auto_ip: "{{ nodes_auto_ip }}"
@@ -26,11 +29,40 @@
   register: "instances"
   with_sequence: count={{ nodes_count }}
 
+- name: Create data volumes for minions
+  os_volume:
+    name: "{{ nodes_extra_volume_name }}{{ item }}"
+    size: "{{ nodes_extra_volume_size }}"
+    state: present
+  when:
+  - state == "present"
+  - nodes_extra_volume
+  with_sequence: count={{ nodes_count }}
+
+- name: Attach data volumes to minions
+  os_server_volume:
+    state: present
+    server: "{{ nodes_name }}{{ item }}"
+    volume: "{{ nodes_extra_volume_name }}{{ item }}"
+  when:
+  - state == "present"
+  - nodes_extra_volume
+  with_sequence: count={{ nodes_count }}
+
 - name: Delete OpenStack instances
   os_server:
     name: "{{ nodes_name }}{{ item }}"
     state: absent
   when: state == "absent"
+  with_sequence: count={{ nodes_count }}
+
+- name: Delete data volumes
+  os_volume:
+    name: "{{ nodes_extra_volume_name }}{{ item }}"
+    state: absent
+  when:
+  - state == "absent"
+  - nodes_extra_volume
   with_sequence: count={{ nodes_count }}
 
 - name: Delete security group
