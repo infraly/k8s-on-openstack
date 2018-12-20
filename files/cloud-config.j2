@@ -20,7 +20,10 @@ domain-name = {{ lookup('env', 'OS_USER_DOMAIN_ID') }}
 
 [BlockStorage]
 trust-device-path = false
-bs-version = v2
+bs-version = {{ hostvars[groups.master[0]]['block_storage_version'] }}
+{% if hostvars[groups.master[0]]['ignore_volume_az'] %}
+ignore-volume-az = true
+{% endif %}
 
 {% if lookup('env', 'FLOATING_IP_NETWORK_UUID') != '' %}
 [LoadBalancer]
