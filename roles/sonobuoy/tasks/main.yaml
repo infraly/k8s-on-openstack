@@ -1,0 +1,38 @@
+---
+- name: Download sonobuoy release
+  get_url:
+    url: "{{ sonobuoy_release_url }}"
+    dest: "/home/ubuntu/sonobuoy_{{ sonobuoy_version }}_linux_amd64.tar.gz"
+  register: sonobuoy_tarball
+
+- name: Extract sonobuoy tarball
+  unarchive:
+    src: "{{ sonobuoy_tarball.dest }}"
+    remote_src: yes
+    dest: "/home/ubuntu"
+    exclude: "LICENSE"
+    creates: "/home/ubuntu/sonobuoy"
+
+- name: "Deploy sonobuoy"
+  command: "./sonobuoy run"
+
+- name: "Get sonobuoy status"
+  command: "./sonobuoy status"
+  register: "sonobuoy_status"
+  until: "'completed' in sonobuoy_status.stdout"
+  retries: 60
+  delay: 60
+
+- name: "Get sonobuoy logs"
+  command: "./sonobuoy logs"
+  register: sonobuoy_logs
+
+- name: "Display sonobuoy logs"
+  debug:
+    msg: "{{ sonobuoy_logs.stdout_lines }}"
+
+- name: "Retrieve sonobuoy logs"
+  command: "./sonobuoy retrieve ."
+
+- name: "Delete sonobuoy deployment"
+  command: "./sonobuoy delete"

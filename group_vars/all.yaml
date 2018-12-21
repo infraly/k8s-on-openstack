@@ -43,3 +43,7 @@ helm_install: "{{ lookup('env', 'HELM_INSTALL').split(';') | default([], true) }
 #Change at your own risk
 kubernetes_version: v1.11.5
 kubernetes_ubuntu_version: 1.11.5-00
+
+# Sonobuoy conformance testing
+sonobuoy_version: 0.13.0
+sonobuoy_release_url: "https://github.com/heptio/sonobuoy/releases/download/v{{ sonobuoy_version }}/sonobuoy_{{ sonobuoy_version }}_linux_amd64.tar.gz"
