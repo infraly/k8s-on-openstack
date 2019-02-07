@@ -72,7 +72,7 @@
     state: absent
   when: state == "absent"
 
-- name: Update inventory
+- name: Update inventory for private IP
   add_host:
     name: "{{ item.server.name }}"
     ansible_ssh_host: "{{ item.server.private_v4 }}"
@@ -80,7 +80,20 @@
     ansible_ssh_common_args: "-o ProxyCommand=\"ssh -W %h:%p -q ubuntu@{{ hostvars[groups.master[0]]['ansible_ssh_host'] }}\""
     groupname: nodes
   with_items: "{{ instances.results }}"
-  when: state == "present"
+  when:
+  - state == "present"
+  - not nodes_auto_ip
+
+- name: Update inventory with public IP
+  add_host:
+    name: "{{ item.server.name }}"
+    ansible_ssh_host: "{{ item.server.public_v4 }}"
+    ansible_ssh_user: ubuntu
+    groupname: nodes
+  with_items: "{{ instances.results }}"
+  when:
+  - state == "present"
+  - nodes_auto_ip
 
 - name: Wait during nodes boot
   wait_for:
