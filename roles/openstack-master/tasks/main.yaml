@@ -51,6 +51,10 @@
     search_regex: OpenSSH
   when: state == "present"
 
-- name: Allow SSH keys on first connection
-  shell: "ssh-keyscan {{ instance.openstack.accessIPv4 }} >> ~/.ssh/known_hosts"
+- name: Allow SSH keys if we don't have them already
+  lineinfile:
+    dest: ~/.ssh/known_hosts
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan ' + instance.openstack.accessIPv4) }}"
   when: state == "present"
