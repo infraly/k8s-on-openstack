@@ -24,7 +24,7 @@ nodes_name: "{{ name }}-" # node id will automatically be appended
 nodes_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
 nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
 nodes_flavor_name: "{{ lookup('env','NODE_FLAVOR') | default(false) }}"
-nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }} | bool"
+nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }}"
 nodes_delete_fip: "{{ lookup('env', 'NODE_DELETE_FIP') | default ('True', true) }}"
 # Some clouds only support boot from volume - use it even for ephemeral nodes
 nodes_boot_from_volume: "{{ lookup('env', 'NODE_BOOT_FROM_VOLUME') | default('False', true) }}"
