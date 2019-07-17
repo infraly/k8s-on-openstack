@@ -148,7 +148,7 @@
     port_range_max: 32767
   when:
   - state == "present"
-  - use_octavia
+  - (use_octavia|bool or use_loadbalancer|bool)
 
 - name: Delete master security group
   tags: bootstrap
