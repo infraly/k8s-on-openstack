@@ -13,7 +13,7 @@ block_storage_version: "{{ lookup('env', 'BLOCK_STORAGE_VERSION') | default('v2'
 ignore_volume_az: "{{ lookup('env', 'IGNORE_VOLUME_AZ') | default('false', true) | bool }}"
 
 master_name: "{{ name }}-master"
-master_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+master_image: "{{ lookup('env','IMAGE') | default('bionic-server-cloudimg-amd64', true) }}"
 master_flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
 master_flavor_name: "{{ lookup('env','MASTER_FLAVOR') | default(false) }}"
 master_boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
@@ -22,7 +22,7 @@ master_volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true
 
 nodes_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
 nodes_name: "{{ name }}-" # node id will automatically be appended
-nodes_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+nodes_image: "{{ lookup('env','IMAGE') | default('bionic-server-cloudimg-amd64', true) }}"
 nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
 nodes_flavor_name: "{{ lookup('env','NODE_FLAVOR') | default(false) }}"
 nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }}"
@@ -42,5 +42,7 @@ helm_repos: "{{ lookup('env', 'HELM_REPOS').split(';') | default([], true) }}"
 helm_install: "{{ lookup('env', 'HELM_INSTALL').split(';') | default([], true) }}"
 
 #Change at your own risk
-kubernetes_version: v1.11.5
-kubernetes_ubuntu_version: 1.11.5-00
+kubernetes_version: v1.15.2
+kubernetes_ubuntu_version: 1.15.2-00
+kubernetes_cni_ubuntu_version: 0.7.5-00
+docker_version: 18.09.7-0ubuntu1~18.04.4
