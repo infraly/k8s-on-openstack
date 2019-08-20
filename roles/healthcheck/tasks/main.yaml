@@ -3,7 +3,7 @@
   register: nodes_status
   retries: 30
   delay: 10
-  until: nodes_status | success
+  until: nodes_status is success
   tags:
     - skip_ansible_lint
 
