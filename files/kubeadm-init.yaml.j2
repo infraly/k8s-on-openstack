@@ -1,0 +1,61 @@
+# Docs @ https://godoc.org/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2
+
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+nodeRegistration:
+  kubeletExtraArgs:
+    cgroup-driver: systemd
+    cloud-provider: external
+    network-plugin: kubenet
+localAPIEndpoint:
+  advertiseAddress: "{{ hostvars[groups.master[0]].ansible_ssh_host }}"
+
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+nodeRegistration:
+  kubeletExtraArgs:
+    cloud-provider: external
+    network-plugin: kubenet
+
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: {{ kubernetes_version }}
+apiServer:
+  extraArgs:
+    advertise-address: "{{ hostvars[groups.master[0]].ansible_ssh_host }}"
+    bind-address: 0.0.0.0
+    authorization-mode: "Node,Webhook,RBAC"
+    authentication-token-webhook-config-file: "/etc/kubernetes/pki/webhook.kubeconfig.yaml"
+    authorization-webhook-config-file: "/etc/kubernetes/pki/webhook.kubeconfig.yaml"
+    cloud-provider: "external"
+  extraVolumes:
+  - name: "cloud-config"
+    hostPath: "/etc/kubernetes/cloud-config"
+    mountPath: "/etc/kubernetes/cloud-config"
+    readOnly: true
+    pathType: FileOrCreate
+
+controllerManager:
+  extraArgs:
+    cloud-provider: external
+    external-cloud-volume-plugin: openstack
+    bind-address: 0.0.0.0
+    allocate-node-cidrs: "true"
+    cloud-config: /etc/kubernetes/cloud-config
+  extraVolumes:
+  - name: "cloud-config"
+    hostPath: "/etc/kubernetes/cloud-config"
+    mountPath: "/etc/kubernetes/cloud-config"
+    readOnly: true
+    pathType: FileOrCreate
+
+networking:
+  podSubnet: "10.96.0.0/16"
+
+etcd:
+  local:
+    extraArgs:
+      listen-peer-urls: 'https://0.0.0.0:2380'
+      listen-client-urls: 'https://0.0.0.0:2379'

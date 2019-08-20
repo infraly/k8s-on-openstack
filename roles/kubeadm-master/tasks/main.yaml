@@ -3,77 +3,44 @@
     path: /etc/kubernetes/kubelet.conf
   register: kubelet_conf
 
-- name: kubeadm init
-  command: "kubeadm init --kubernetes-version {{ kubernetes_version }} --apiserver-advertise-address {{ hostvars[groups.master[0]].ansible_ssh_host }}"
-  args:
-    creates: /etc/kubernetes/kubelet.conf
-  when: kubelet_conf.stat.exists == False
-
-- name: generate a join token
-  command: kubeadm token create --print-join-command
-  register: joincommand
-
-- name: set fact joincommand
-  set_fact:
-    joincommand: "{{ joincommand.stdout }}"
+- name: Create kubeadm config file
+  template:
+    src: files/kubeadm-init.yaml.j2
+    dest: /etc/kubeadm-init.conf.yaml
+    mode: 0600
 
 - name: Upload the openstack-cloud-controller-manager pod descriptor
   copy:
     dest: /etc/kubernetes/manifests/openstack-cloud-controller-manager-pod.yaml
     src: files/openstack-cloud-controller-manager-pod.yaml
 
-- name: Configure kube-controller-manager cloud provider integration Step1
-  blockinfile:
-    insertbefore: 'image: '
-    block: "    - --cloud-provider=external\n    - --cluster-cidr=10.96.0.0/16\n    - --allocate-node-cidrs=true\n    - --external-cloud-volume-plugin=openstack\n    - --cloud-config=/etc/kubernetes/cloud-config"
-    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDPROVIDER"
-
-- name: Configure kube-controller-manager cloud provider integration Step2
-  blockinfile:
-    insertafter: 'volumeMounts:'
-    block: "    - mountPath: /etc/kubernetes/cloud-config\n      name: cloud-config\n      readOnly: true"
-    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDCONFIG"
-
-- name: Configure kube-controller-manager cloud provider integration Step3
-  blockinfile:
-    insertbefore: 'status: '
-    block: "  - hostPath:\n      path: /etc/kubernetes/cloud-config\n      type: FileOrCreate\n    name: cloud-config"
-    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    marker: "# {mark} ANSIBLE MANAGED BLOCK HOSTPATH"
+- name: Ensure /etc/kubernetes/pki/ directory is present
+  become: True
+  file:
+    path: /etc/kubernetes/pki/
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
 
 - name: Upload webook kubeconfig file
   copy:
     dest: /etc/kubernetes/pki/webhook.kubeconfig.yaml
     src: files/webhook.kubeconfig.yaml
 
-- name: Ensure --authorization-mode has Webhook mode
-  lineinfile:
-    state: present
-    path: /etc/kubernetes/manifests/kube-apiserver.yaml
-    regexp: '.*--authorization-mode=.*'
-    line: "    - --authorization-mode=Node,Webhook,RBAC"
+- name: Run kubeadm init
+  command: "kubeadm init --config /etc/kubeadm-init.conf.yaml"
+  args:
+    creates: /etc/kubernetes/kubelet.conf
+  when: kubelet_conf.stat.exists == False
 
-- name: Configure apiserver cloud provider integration
-  blockinfile:
-    insertbefore: 'image: '
-    block: "    - --authentication-token-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --authorization-webhook-config-file=/etc/kubernetes/pki/webhook.kubeconfig.yaml\n    - --cloud-provider=external"
-    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+- name: Generate a join token
+  command: kubeadm token create --print-join-command
+  register: joincommand
 
-- name: Configure apiserver cloud provider integration Step2
-  blockinfile:
-    insertafter: 'volumeMounts:'
-    block: "    - mountPath: /etc/kubernetes/cloud-config\n      name: cloud-config\n      readOnly: true"
-    path: /etc/kubernetes/manifests/kube-apiserver.yaml
-    marker: "# {mark} ANSIBLE MANAGED BLOCK CLOUDCONFIG"
-
-- name: Configure apiserver cloud provider integration Step3
-  blockinfile:
-    insertbefore: 'status: '
-    block: "  - hostPath:\n      path: /etc/kubernetes/cloud-config\n      type: FileOrCreate\n    name: cloud-config"
-    path: /etc/kubernetes/manifests/kube-apiserver.yaml
-    marker: "# {mark} ANSIBLE MANAGED BLOCK HOSTPATH"
+- name: Set fact joincommand
+  set_fact:
+    joincommand: "{{ joincommand.stdout }}"
 
 - name: In case of upgrade make sure container versions are right for kube-apiserver
   replace:
