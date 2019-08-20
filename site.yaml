@@ -33,6 +33,11 @@
     - openstack-security-groups
     - openstack-master
 
+- name: Launch k8s nodes
+  hosts: localhost
+  roles:
+    - openstack-nodes
+
 - name: Master preparation
   hosts: master
   pre_tasks:
@@ -44,11 +49,6 @@
   gather_facts: false
   roles:
     - common
-
-- name: Launch k8s nodes
-  hosts: localhost
-  roles:
-    - openstack-nodes
 
 - name: Nodes preparation
   hosts: nodes
