@@ -5,26 +5,26 @@
 
 This repository has been forked from <https://github.com/infraly/k8s-on-openstack>.
 
+Tested with Ansible 2.8.3
+
 ## What does work
 
-- Master node comes up ready on Ubuntu 18.04 and Kubernetes 1.15.2
+- Master node and workers comes up ready on Ubuntu 18.04 and Kubernetes 1.15.2
 
 ## What does NOT work
 
-- Worker node(s) does not get into ready state (see below)
+- Networking seems not to be correctly configured
 - CoreDNS and Dashboard are in state "CrashLoopBackOff"
 
-## WiP: Worker node:
+## Todo: Find a better way to configure worker nodes' network plugin
 
-Somehow, the network plugin (kubenet) is not correctly set on the worker node
-
-On the master node `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm init`) contains: 
+Somehow, the network plugin (kubenet) is not correctly set on the worker node. On the master node `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm init`) contains: 
 
 ```bash
 KUBELET_KUBEADM_ARGS="--cgroup-driver=systemd --cloud-provider=external --network-plugin=kubenet --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf"
 ```
 
-It contains the correct `--network-plugin=kubenet` as configured [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L9)
+It contains the correct `--network-plugin=kubenet` as configured [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L9).
 
 After joining the k8s cluster, the worker node's copy of `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm join`) looks like this: 
 
@@ -32,15 +32,16 @@ After joining the k8s cluster, the worker node's copy of `/var/lib/kubelet/kubea
 KUBELET_KUBEADM_ARGS="--cgroup-driver=systemd --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf"
 ```
 
-It contains `--network-plugin=cni` despite setting `network-plugin: kubenet`" [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L21). But the JoinConfiguration is ignored by `kubeadm join` when using a join token.
+It contains `--network-plugin=cni` despite setting `network-plugin: kubenet` [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L21). But the JoinConfiguration is ignored by `kubeadm join` when using a join token.
 
 Once I edit `/var/lib/kubelet/kubeadm-flags.env` to contain --network-plugin=kubenet, the worker node goes online. I've added a hack in [roles/kubeadm-nodes/tasks/main.yaml](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/roles/kubeadm-nodes/tasks/main.yaml#L12) to set the correct value.
 
-## WiP: CoreDNS:
+## WiP: CoreDNS
 
 This seems to be a networking issue. 
 
 Running `kubectl run -i --tty busybox --image=radial/busyboxplus:curl --restart=Never --rm  -- sh` to get a shell in the cluster and trying to ping any IP (in the cluster or the Internet) does not work.
+
 
 
 ---
