@@ -15,3 +15,5 @@
     path: /var/lib/kubelet/kubeadm-flags.env
     regexp: network-plugin=cni
     replace: "network-plugin=kubenet"
+  notify:
+    - Restart kubelet
