@@ -10,13 +10,20 @@ nodeRegistration:
 localAPIEndpoint:
   advertiseAddress: "{{ hostvars[groups.master[0]].ansible_ssh_host }}"
 
+# This is ignored by kubeadm (because we are joining using a token, this excludes the use of JoinConfiguration)
+# see kubeadm-nodes/main.yaml for a hack to heal this issue
+#---
+#apiVersion: kubeadm.k8s.io/v1beta2
+#kind: JoinConfiguration
+#nodeRegistration:
+#  kubeletExtraArgs:
+#    cloud-provider: external
+#    network-plugin: kubenet
+
 ---
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: JoinConfiguration
-nodeRegistration:
-  kubeletExtraArgs:
-    cloud-provider: external
-    network-plugin: kubenet
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
 
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
