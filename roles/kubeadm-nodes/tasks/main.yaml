@@ -8,3 +8,10 @@
   args:
     creates: /etc/kubernetes/kubelet.conf
   when: kubelet_conf.stat.exists == False
+
+# For some reason "kubeadm join" does not write the correct value here
+- name: HACK - replace --network-plugin=cni with --network-plugin=kubenet
+  replace:
+    path: /var/lib/kubelet/kubeadm-flags.env
+    regexp: network-plugin=cni
+    replace: "network-plugin=kubenet"
