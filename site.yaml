@@ -66,6 +66,27 @@
   roles:
     - kubeadm
 
+# ------------------------------- START WORKAROUNDS ----------------------------------------
+
+#- name: WORKAROUND for iptables >= 1.8, cf. https://github.com/kubernetes/kubernetes/issues/71305
+#  hosts: all
+#  tasks:
+#    - name: bla
+#      shell: |
+#        update-alternatives --set iptables /usr/sbin/iptables-legacy
+#        update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+#        update-alternatives --set arptables /usr/sbin/arptables-legacy
+#        update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+
+- name: WORKAROUND for networking to work with kubenet
+  hosts: all
+  become: true
+  tasks:
+    - name: Set policy ACCEPT on chain FORWARD (cf. https://github.com/projectcalico/calico/issues/1840)
+      shell: iptables -P FORWARD ACCEPT
+
+# ------------------------------- END WORKAROUNDS ----------------------------------------
+
 - name: k8s master setup
   hosts: master
   tags:
