@@ -1,6 +1,6 @@
 - name: Install k8s APT repo GPG key
   apt_key:
-    url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
     state: present
 
 - name: Setup k8s APT repo
@@ -19,14 +19,21 @@
 
 - name: Install docker and kubernetes packages
   apt:
-    name: ['docker.io={{ docker_version }}', 'kubelet={{ kubernetes_ubuntu_version }}', 'kubeadm={{ kubernetes_ubuntu_version }}', 'kubectl={{ kubernetes_ubuntu_version }}', 'kubernetes-cni={{ kubernetes_cni_ubuntu_version }}']
+    name:
+      [
+        "docker.io={{ docker_version }}",
+        "kubelet={{ kubernetes_ubuntu_version }}",
+        "kubeadm={{ kubernetes_ubuntu_version }}",
+        "kubectl={{ kubernetes_ubuntu_version }}",
+        "kubernetes-cni={{ kubernetes_cni_ubuntu_version }}",
+      ]
     state: present
     update_cache: yes
 
 - name: Enable docker service
-  systemd: 
-    name: docker 
-    enabled: yes 
+  systemd:
+    name: docker
+    enabled: yes
     daemon_reload: yes
 
 - name: Hold docker and kubernetes packages
@@ -64,7 +71,8 @@
     mode: 0644
     owner: root
     group: root
-  notify: "restart rsyslog"
+  notify:
+    - Restart rsyslog
 
 - name: add hosts
   lineinfile:
