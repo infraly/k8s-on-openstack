@@ -4,6 +4,10 @@ name: "{{ lookup('env','NAME') | default('k8s', true) }}"
 
 network_name: "{{ lookup('env','NETWORK') | default(name, true) }}"
 subnet_name: "{{ lookup('env','NETWORK') | default(name, true) }}"
+subnet_cidr: "{{ lookup('env','SUBNET_CIDR') | default('10.8.10.0/24', true) }}"
+pod_subnet_cidr: "{{ lookup('env','POD_SUBNET_CIDR') | default('10.96.0.0/16', true) }}"
+cluster_dns_ip: "{{ lookup('env','CLUSTER_DNS_IP') | default('10.96.0.10', true) }}"
+
 router_name: "{{ lookup('env','NAME') | default(name, true) }}"
 floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
 external_network_name: "{{ lookup('env', 'EXTERNAL_NETWORK') | default('public', true) }}"
