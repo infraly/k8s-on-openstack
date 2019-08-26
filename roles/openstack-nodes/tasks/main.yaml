@@ -35,8 +35,8 @@
     size: "{{ nodes_extra_volume_size }}"
     state: present
   when:
-  - state == "present"
-  - nodes_extra_volume
+    - state == "present"
+    - nodes_extra_volume
   with_sequence: count={{ nodes_count }}
 
 - name: Attach data volumes to minions
@@ -45,8 +45,8 @@
     server: "{{ nodes_name }}{{ item }}"
     volume: "{{ nodes_extra_volume_name }}{{ item }}"
   when:
-  - state == "present"
-  - nodes_extra_volume
+    - state == "present"
+    - nodes_extra_volume
   with_sequence: count={{ nodes_count }}
 
 - name: Delete OpenStack instances
@@ -61,8 +61,8 @@
     name: "{{ nodes_extra_volume_name }}{{ item }}"
     state: absent
   when:
-  - state == "absent"
-  - nodes_extra_volume
+    - state == "absent"
+    - nodes_extra_volume
   with_sequence: count={{ nodes_count }}
 
 - name: Delete security group
@@ -77,12 +77,12 @@
     name: "{{ item.server.name }}"
     ansible_ssh_host: "{{ item.server.private_v4 }}"
     ansible_ssh_user: ubuntu
-    ansible_ssh_common_args: "-o ProxyCommand=\"ssh -W %h:%p -q ubuntu@{{ hostvars[groups.master[0]]['ansible_ssh_host'] }}\""
+    ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@{{ hostvars[groups.master[0]][''ansible_ssh_host''] }}"'
     groupname: nodes
   with_items: "{{ instances.results }}"
   when:
-  - state == "present"
-  - not nodes_auto_ip
+    - state == "present"
+    - not nodes_auto_ip
 
 - name: Update inventory with public IP
   add_host:
@@ -92,8 +92,8 @@
     groupname: nodes
   with_items: "{{ instances.results }}"
   when:
-  - state == "present"
-  - nodes_auto_ip
+    - state == "present"
+    - nodes_auto_ip
 
 - name: Wait during nodes boot
   wait_for:
