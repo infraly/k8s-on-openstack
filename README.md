@@ -1,56 +1,6 @@
+This repository has been forked from <https://github.com/infraly/k8s-on-openstack> to update the Ansible playbook to use Ubuntu 18.04 and Kubernetes 1.15.2
 
-# **THIS IS WORK IN PROGRESS, HELP WELCOME **
-
-**Goal: update to Ubuntu 18.04 and Kubernetes 1.15.2.**
-
-This repository has been forked from <https://github.com/infraly/k8s-on-openstack>.
-
-Tested with Ansible 2.8.3
-
-## What does work
-
-- Master node and workers comes up ready on Ubuntu 18.04 and Kubernetes 1.15.2
-
-## What does NOT work
-
-- Networking seems not to be correctly configured
-- CoreDNS and Dashboard are in state "CrashLoopBackOff"
-
-## Todo: Find a better way to configure worker nodes' network plugin
-
-Somehow, the network plugin (kubenet) is not correctly set on the worker node. On the master node `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm init`) contains: 
-
-```bash
-KUBELET_KUBEADM_ARGS="--cgroup-driver=systemd --cloud-provider=external --network-plugin=kubenet --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf"
-```
-
-It contains the correct `--network-plugin=kubenet` as configured [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L9).
-
-After joining the k8s cluster, the worker node's copy of `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm join`) looks like this: 
-
-```bash
-KUBELET_KUBEADM_ARGS="--cgroup-driver=systemd --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf"
-```
-
-It contains `--network-plugin=cni` despite setting `network-plugin: kubenet` [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L21). But the JoinConfiguration is ignored by `kubeadm join` when using a join token.
-
-Once I edit `/var/lib/kubelet/kubeadm-flags.env` to contain --network-plugin=kubenet, the worker node goes online. I've added a hack in [roles/kubeadm-nodes/tasks/main.yaml](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/roles/kubeadm-nodes/tasks/main.yaml#L12) to set the correct value.
-
-## WiP: CoreDNS
-
-This seems to be a networking issue. 
-
-Running `kubectl run -i --tty busybox --image=radial/busyboxplus:curl --restart=Never --rm  -- sh` to get a shell in the cluster and trying to ping any IP (in the cluster or the Internet) does not work.
-
-
-
----
-
-
-# Original README.md
-
-k8s-on-openstack
-================
+# k8s-on-openstack
 
 An opinionated way to deploy a Kubernetes cluster on top of an OpenStack cloud.
 
@@ -59,8 +9,7 @@ It is based on the following tools:
   * `kubeadm`
   * `ansible`
 
-Getting started
----------------
+## Getting started
 
 The following mandatory environment variables need to be set before calling `ansible-playbook`:
 
@@ -76,6 +25,9 @@ The following optional environment variables can also be set:
   * `FLOATING_IP_NETWORK_UUID`: uuid of the floating IP network (required for LBaaSv2)
   * `USE_OCTAVIA`: try to use Octavia instead of Neutron LBaaS, defaults to False
   * `USE_LOADBALANCER`: assume a loadbalancer is used and allow traffic to nodes (default: false)
+  * `SUBNET_CIDR` the subnet CIDR for OpenStack's network (default: `10.8.10.0/24`)
+  * `POD_SUBNET_CIDR` CIDR of the POD network (default: `10.96.0.0/16`)
+  * `CLUSTER_DNS_IP`: IP address of the cluster DNS service passed to kubelet (default: `10.96.0.10`)
   * `BLOCK_STORAGE_VERSION`: version of the block storage (Cinder) service, defaults to 'v2'
   * `IGNORE_VOLUME_AZ`: whether to ignore the AZ field of volumes, needed on some clouds where AZs confuse the driver, defaults to False.
   * `NODE_MEMORY`: how many MB of memory should nodes have, defaults to 4GB
@@ -120,14 +72,33 @@ $ ansible-playbook upgrade.yaml
 $ ansible-playbook site.yaml
 ```
 
-Prerequisites
--------------
+## Open Issues
 
-  * Ansible (tested with version 2.4 but probably also works with older ones)
+### Find a better way to configure worker nodes' network plugin
+
+Somehow, the network plugin (kubenet) is not correctly set on the worker node. On the master node `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm init`) contains: 
+
+```bash
+KUBELET_KUBEADM_ARGS="--cgroup-driver=systemd --cloud-provider=external --network-plugin=kubenet --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf"
+```
+
+It contains the correct `--network-plugin=kubenet` as configured [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L9). After joining the k8s cluster, the worker node's copy of `/var/lib/kubelet/kubeadm-flags.env` (created by `kubeadm join`) looks like this: 
+
+```bash
+KUBELET_KUBEADM_ARGS="--cgroup-driver=systemd --network-plugin=cni --pod-infra-container-image=k8s.gcr.io/pause:3.1 --resolv-conf=/run/systemd/resolve/resolv.conf"
+```
+
+It contains `--network-plugin=cni` despite setting `network-plugin: kubenet` [here](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/files/kubeadm-init.yaml.j2#L21). But the JoinConfiguration is ignored by `kubeadm join` when using a join token. 
+
+Once I edit `/var/lib/kubelet/kubeadm-flags.env` to contain --network-plugin=kubenet, the worker node goes online. I've added a hack in [roles/kubeadm-nodes/tasks/main.yaml](https://github.com/pfisterer/k8s-on-openstack-wip-k8s-1.15/blob/master/roles/kubeadm-nodes/tasks/main.yaml#L12) to set the correct value.
+
+
+## Prerequisites
+
+  * Ansible (tested with version 2.8.3)
   * Shade library required by Ansible OpenStack modules (`python-shade` for Debian)
 
-CI/CD
------
+## CI/CD
 
 The following environment variables needs to be defined:
 
@@ -136,16 +107,15 @@ The following environment variables needs to be defined:
   * `OS_USERNAME`
   * `OS_DOMAIN_NAME`
 
-Authors
-------
+# Authors
 
   * François Deppierraz <francois.deppierraz@infraly.ch>
   * Oli Schacher <oli.schacher@switch.ch>
   * Saverio Proto <saverio.proto@switch.ch>
-  * @HaseHarald
+  * @HaseHarald <https://github.com/HaseHarald>
+  * Dennis Pfisterer <https://github.com/pfisterer>
 
-References
-----------
+# References
 
   * https://kubernetes.io/docs/getting-started-guides/kubeadm/
   * https://www.weave.works/docs/net/latest/kube-addon/
