@@ -7,6 +7,8 @@ nodeRegistration:
     cgroup-driver: systemd
     cloud-provider: external
     network-plugin: kubenet
+    cluster-dns: "{{ cluster_dns_ip }}"
+    # non-masquerade-cidr: 0.0.0.0/0 # from https://medium.com/elotl-blog/kubernetes-networking-on-aws-part-i-99012e938a40
 localAPIEndpoint:
   advertiseAddress: "{{ hostvars[groups.master[0]].ansible_ssh_host }}"
 
@@ -38,31 +40,35 @@ apiServer:
     authorization-webhook-config-file: "/etc/kubernetes/pki/webhook.kubeconfig.yaml"
     cloud-provider: "external"
   extraVolumes:
-  - name: "cloud-config"
-    hostPath: "/etc/kubernetes/cloud-config"
-    mountPath: "/etc/kubernetes/cloud-config"
-    readOnly: true
-    pathType: FileOrCreate
+    - name: "cloud-config"
+      hostPath: "/etc/kubernetes/cloud-config"
+      mountPath: "/etc/kubernetes/cloud-config"
+      readOnly: true
+      pathType: FileOrCreate
 
 controllerManager:
   extraArgs:
     cloud-provider: external
     external-cloud-volume-plugin: openstack
     bind-address: 0.0.0.0
-    allocate-node-cidrs: "true"
     cloud-config: /etc/kubernetes/cloud-config
+    configure-cloud-routes: "true"
+    allocate-node-cidrs: "true"
   extraVolumes:
-  - name: "cloud-config"
-    hostPath: "/etc/kubernetes/cloud-config"
-    mountPath: "/etc/kubernetes/cloud-config"
-    readOnly: true
-    pathType: FileOrCreate
+    - name: "cloud-config"
+      hostPath: "/etc/kubernetes/cloud-config"
+      mountPath: "/etc/kubernetes/cloud-config"
+      readOnly: true
+      pathType: FileOrCreate
 
 networking:
-  podSubnet: "10.96.0.0/16"
+  # ServiceSubnet is the subnet used by k8s services. Defaults to "10.96.0.0/12".
+  serviceSubnet: "{{ subnet_cidr }}"
+  # PodSubnet is the subnet used by pods.
+  podSubnet: "{{ pod_subnet_cidr }}"
 
 etcd:
   local:
     extraArgs:
-      listen-peer-urls: 'https://0.0.0.0:2380'
-      listen-client-urls: 'https://0.0.0.0:2379'
+      listen-peer-urls: "https://0.0.0.0:2380"
+      listen-client-urls: "https://0.0.0.0:2379"
