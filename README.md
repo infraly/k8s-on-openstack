@@ -1,5 +1,3 @@
-This repository has been forked from <https://github.com/infraly/k8s-on-openstack> to update the Ansible playbook to use Ubuntu 18.04 and Kubernetes 1.15.2
-
 # k8s-on-openstack
 
 An opinionated way to deploy a Kubernetes cluster on top of an OpenStack cloud.
