@@ -1,12 +1,6 @@
 - name: Install k8s APT repo GPG key
   apt_key:
-    url: 'https://packages.cloud.google.com/apt/doc/apt-key.gpg'
-    state: present
-
-- name: Install Docker APT repo GPG key
-  apt_key:
-    id: F76221572C52609D
-    keyserver: keyserver.ubuntu.com
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
     state: present
 
 - name: Setup k8s APT repo
@@ -14,15 +8,10 @@
     repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
     state: present
 
-- name: Setup Docker APT repo
-  apt_repository:
-    repo: deb http://apt.dockerproject.org/repo ubuntu-xenial main
-    state: present
-
 - name: Unhold docker and kubernetes packages
   command: "apt-mark unhold {{ item }}"
   with_items:
-    - docker-engine
+    - docker.io
     - kubelet
     - kubeadm
     - kubectl
@@ -30,20 +19,27 @@
 
 - name: Install docker and kubernetes packages
   apt:
-    name: "{{item}}"
-    state: installed
+    name:
+      [
+        "docker.io={{ docker_version }}",
+        "kubelet={{ kubernetes_ubuntu_version }}",
+        "kubeadm={{ kubernetes_ubuntu_version }}",
+        "kubectl={{ kubernetes_ubuntu_version }}",
+        "kubernetes-cni={{ kubernetes_cni_ubuntu_version }}",
+      ]
+    state: present
     update_cache: yes
-  with_items:
-    - docker-engine=1.12.6-0~ubuntu-xenial
-    - "kubelet={{ kubernetes_ubuntu_version }}"
-    - "kubeadm={{ kubernetes_ubuntu_version }}"
-    - "kubectl={{ kubernetes_ubuntu_version }}"
-    - "kubernetes-cni=0.6.0-00"
+
+- name: Enable docker service
+  systemd:
+    name: docker
+    enabled: yes
+    daemon_reload: yes
 
 - name: Hold docker and kubernetes packages
   command: "apt-mark hold {{ item }}"
   with_items:
-    - docker-engine
+    - docker.io
     - kubelet
     - kubeadm
     - kubectl
@@ -53,7 +49,11 @@
   copy:
     content: |
       {
-        "log-driver": "journald"
+        "exec-opts": [
+          "native.cgroupdriver=systemd"
+        ],
+        "log-driver": "journald",
+        "storage-driver": "overlay2"
       }
     dest: /etc/docker/daemon.json
     owner: root
@@ -71,7 +71,8 @@
     mode: 0644
     owner: root
     group: root
-  notify: "restart rsyslog"
+  notify:
+    - Restart rsyslog
 
 - name: add hosts
   lineinfile:

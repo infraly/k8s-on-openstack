@@ -4,15 +4,20 @@ name: "{{ lookup('env','NAME') | default('k8s', true) }}"
 
 network_name: "{{ lookup('env','NETWORK') | default(name, true) }}"
 subnet_name: "{{ lookup('env','NETWORK') | default(name, true) }}"
+subnet_cidr: "{{ lookup('env','SUBNET_CIDR') | default('10.8.10.0/24', true) }}"
+pod_subnet_cidr: "{{ lookup('env','POD_SUBNET_CIDR') | default('10.96.0.0/16', true) }}"
+cluster_dns_ip: "{{ lookup('env','CLUSTER_DNS_IP') | default('10.96.0.10', true) }}"
+
 router_name: "{{ lookup('env','NAME') | default(name, true) }}"
 floating_ip_pools: "{{ lookup('env', 'FLOATING_IP_POOL') | default(omit, true) }}"
 external_network_name: "{{ lookup('env', 'EXTERNAL_NETWORK') | default('public', true) }}"
 use_octavia: "{{ lookup('env', 'USE_OCTAVIA') | default('False', true) | bool }}"
+use_loadbalancer: "{{ lookup('env', 'USE_LOADBALANCER') | default('False', true) | bool }}"
 block_storage_version: "{{ lookup('env', 'BLOCK_STORAGE_VERSION') | default('v2', true) }}"
 ignore_volume_az: "{{ lookup('env', 'IGNORE_VOLUME_AZ') | default('false', true) | bool }}"
 
 master_name: "{{ name }}-master"
-master_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+master_image: "{{ lookup('env','IMAGE') | default('bionic-server-cloudimg-amd64', true) }}"
 master_flavor_ram: "{{ lookup('env','MASTER_MEMORY') | default('4096', true) }}"
 master_flavor_name: "{{ lookup('env','MASTER_FLAVOR') | default(false) }}"
 master_boot_from_volume: "{{ lookup('env', 'MASTER_BOOT_FROM_VOLUME') | default('True', true) }}"
@@ -21,7 +26,7 @@ master_volume_size: "{{ lookup('env', 'MASTER_VOLUME_SIZE') | default('64', true
 
 nodes_count: "{{ lookup('env', 'NODE_COUNT') | default(3, true) }}"
 nodes_name: "{{ name }}-" # node id will automatically be appended
-nodes_image: "{{ lookup('env','IMAGE') | default('xenial-server-cloudimg-amd64', true) }}"
+nodes_image: "{{ lookup('env','IMAGE') | default('bionic-server-cloudimg-amd64', true) }}"
 nodes_flavor_ram: "{{ lookup('env','NODE_MEMORY') | default('4096', true) }}"
 nodes_flavor_name: "{{ lookup('env','NODE_FLAVOR') | default(false) }}"
 nodes_auto_ip: "{{ lookup('env', 'NODE_AUTO_IP') | default ('False', true) }}"
@@ -41,5 +46,7 @@ helm_repos: "{{ lookup('env', 'HELM_REPOS').split(';') | default([], true) }}"
 helm_install: "{{ lookup('env', 'HELM_INSTALL').split(';') | default([], true) }}"
 
 #Change at your own risk
-kubernetes_version: v1.11.5
-kubernetes_ubuntu_version: 1.11.5-00
+kubernetes_version: v1.15.2
+kubernetes_ubuntu_version: 1.15.2-00
+kubernetes_cni_ubuntu_version: 0.7.5-00
+docker_version: 18.09.7-0ubuntu1~18.04.4

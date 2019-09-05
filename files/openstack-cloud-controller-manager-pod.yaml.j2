@@ -16,7 +16,7 @@ spec:
         - /bin/openstack-cloud-controller-manager
         - --v=2
         - --allocate-node-cidrs=true
-        - --cluster-cidr=10.96.0.0/16
+        - --cluster-cidr={{ pod_subnet_cidr }}
         - --cloud-config=/etc/kubernetes/cloud-config
         - --cloud-provider=openstack
         - --use-service-account-credentials=true
@@ -42,23 +42,23 @@ spec:
           cpu: 200m
   hostNetwork: true
   volumes:
-  - hostPath:
-      path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
-      type: DirectoryOrCreate
-    name: flexvolume-dir
-  - hostPath:
-      path: /etc/kubernetes/pki
-      type: DirectoryOrCreate
-    name: k8s-certs
-  - hostPath:
-      path: /etc/ssl/certs
-      type: DirectoryOrCreate
-    name: ca-certs
-  - hostPath:
-      path: /etc/kubernetes/controller-manager.conf
-      type: FileOrCreate
-    name: kubeconfig
-  - hostPath:
-      path: /etc/kubernetes/cloud-config
-      type: FileOrCreate
-    name: cloud-config
+    - hostPath:
+        path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+        type: DirectoryOrCreate
+      name: flexvolume-dir
+    - hostPath:
+        path: /etc/kubernetes/pki
+        type: DirectoryOrCreate
+      name: k8s-certs
+    - hostPath:
+        path: /etc/ssl/certs
+        type: DirectoryOrCreate
+      name: ca-certs
+    - hostPath:
+        path: /etc/kubernetes/controller-manager.conf
+        type: FileOrCreate
+      name: kubeconfig
+    - hostPath:
+        path: /etc/kubernetes/cloud-config
+        type: FileOrCreate
+      name: cloud-config
