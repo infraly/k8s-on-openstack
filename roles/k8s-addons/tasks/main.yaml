@@ -33,3 +33,19 @@
 
 - name: kubectl apply k8s-keystone-auth
   command: kubectl apply -f /home/ubuntu/manifests/k8s-keystone-auth.yaml
+
+# Default storage class
+
+- name: Label nodes with availability zone {{ availability_zone }}
+  # cf. https://kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#failure-domainbetakubernetesiozone
+  command: "kubectl label nodes {{ nodes_name }}{{ item }} failure-domain.beta.kubernetes.io/zone={{ availability_zone }}"
+  loop: "{{ range(0, nodes_count }}"
+
+- name: Copy default storage class configuration
+  template:
+    src: "{{ role_path }}/templates/default-storage-class.yaml.j2"
+    dest: /home/ubuntu/manifests/default-storage-class.yaml
+
+- name: Apply default storage class
+  command: kubectl apply -f /home/ubuntu/manifests/default-storage-class.yaml
+# End: Default storage class

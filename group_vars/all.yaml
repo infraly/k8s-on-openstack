@@ -45,6 +45,8 @@ helm_include: "{{ lookup('env', 'INCLUDE_HELM') | default(false) }}"
 helm_repos: "{{ lookup('env', 'HELM_REPOS').split(';') | default([], true) }}"
 helm_install: "{{ lookup('env', 'HELM_INSTALL').split(';') | default([], true) }}"
 
+availability_zone: "{{ lookup('env','AVAILABILITY_ZONE') | default('nova', true) }}"
+
 #Change at your own risk
 kubernetes_version: v1.15.2
 kubernetes_ubuntu_version: 1.15.2-00
