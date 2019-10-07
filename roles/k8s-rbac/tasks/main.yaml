@@ -9,7 +9,7 @@
   register: api_server_up
   retries: 30
   delay: 10
-  until: api_server_up | success
+  until: api_server_up is success
   tags:
     - skip_ansible_lint
 
@@ -21,4 +21,3 @@
 
 - name: apply k8s-auth-policy.yaml
   command: kubectl apply -f /home/ubuntu/manifests/k8s-auth-policy.yaml
-

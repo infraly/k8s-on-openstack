@@ -1,5 +1,5 @@
 - name: kubectl apply dashboard
-  command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+  command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
 
 - name: copy manifests
   copy:
@@ -28,18 +28,17 @@
 - name: copy syncconfig.yaml
   become: true
   copy:
-   src: "{{ role_path }}/files/syncconfig.yaml"
-   dest: "/etc/kubernetes/syncconfig.yaml"
+    src: "{{ role_path }}/files/syncconfig.yaml"
+    dest: "/etc/kubernetes/syncconfig.yaml"
 
 - name: kubectl apply k8s-keystone-auth
   command: kubectl apply -f /home/ubuntu/manifests/k8s-keystone-auth.yaml
 
 # Default storage class
-
 - name: Label nodes with availability zone {{ availability_zone }}
   # cf. https://kubernetes.io/docs/reference/kubernetes-api/labels-annotations-taints/#failure-domainbetakubernetesiozone
-  command: "kubectl label nodes {{ nodes_name }}{{ item }} failure-domain.beta.kubernetes.io/zone={{ availability_zone }}"
-  loop: "{{ range(0, nodes_count }}"
+  command: "kubectl label  --overwrite=true nodes {{ nodes_name }}{{ item }} failure-domain.beta.kubernetes.io/zone={{ availability_zone }}"
+  with_sequence: count={{ nodes_count }}
 
 - name: Copy default storage class configuration
   template:
