@@ -4,18 +4,22 @@
     warn: no
 
 - name: add repos to helm
-  ignore_errors: yes
   command: helm repo add {{ item }}
-  when: helm_repos | length > 0
+  when: item != ''
+  loop: "{{ helm_repos }}"
+
+# Not added by default with Helm v3 (required for nginx-ingress)
+- name: add repos to helm
+  command: "helm repo add stable https://kubernetes-charts.storage.googleapis.com"
 
 - name: update the helm repos
   command: helm repo update
 
 - name: install helm charts
-  ignore_errors: yes
   command: helm install {{ item }}
   register: result
   retries: 30
   delay: 2
   until: result.rc == 0
-  when: helm_install | length > 0
+  when: item != ''
+  loop: "{{ helm_install }}"
