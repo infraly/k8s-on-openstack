@@ -45,7 +45,6 @@ The following optional environment variables can also be set:
   * `MASTER_MEMORY`: how many MB of memory should master have, defaults to 4 GB
   * `MASTER_FLAVOR`: allows to configure the exact OpenStack flavor name or ID to use for the master. When set, the `MASTER_MEMORY` setting is ignored.
   * `AVAILABILITY_ZONE`: the availability zone to use for nodes and the default `StorageClass` (defaults to `nova`). This affects `PersistentVolumeClaims` without explicit a storage class.
-  * `INCLUDE_HELM`: installs helm to the cluster, defaults to False
   * `HELM_REPOS`: a list of additional helm repos to add, separated by semicolons. Example: `charts* https://github.com/helm/charts;mycharts https://github.com/dev/mycharts`
   * `HELM_INSTALL`: a list of helm charts and their parameters to install, separated by semicolons. Example: `mycharts/mychart;charts/somechart --name somechart --namespace somenamespace`
 

@@ -41,7 +41,6 @@ nodes_extra_volume_name: "{{ name }}-data-" # node id will automatically be appe
 nodes_extra_volume_size: "{{ lookup('env', 'NODE_EXTRA_VOLUME_SIZE') | default('80', true) }}"
 nodes_delete_extra_volume: "{{ lookup('env', 'NODE_DELETE_EXTRA_VOLUME') | default('True', true) }}"
 
-helm_include: "{{ lookup('env', 'INCLUDE_HELM') | default(false) }}"
 helm_repos: "{{ lookup('env', 'HELM_REPOS').split(';') | default([], true) }}"
 helm_install: "{{ lookup('env', 'HELM_INSTALL').split(';') | default([], true) }}"
 

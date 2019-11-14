@@ -1,0 +1,20 @@
+- name: Set variables
+  set_fact:
+    k8s_ingress_release_name: "nginx-ingress"
+
+- name: Check if NGINX ingress is already installed
+  shell: helm status '{{ k8s_ingress_release_name }}'
+  ignore_errors: True
+  register: k8s_ingress_status
+
+- name: Add stable repo to helm
+  shell: "helm repo add stable https://kubernetes-charts.storage.googleapis.com"
+  when: k8s_ingress_status.rc != 0
+
+- name: Update helm repos
+  shell: "helm repo update"
+  when: k8s_ingress_status.rc != 0
+
+- name: k8s - Install nginx-ingress via helm
+  shell: "helm install --namespace {{ k8s_ingress_namespace }} --set 'controller.extraArgs.default-ssl-certificate=cert-manager/ingress-certificate-secret' --set 'controller.publishService.enabled=true' --set 'controller.image.tag=0.25.1' '{{ k8s_ingress_release_name }}' 'stable/nginx-ingress'"
+  when: k8s_ingress_status.rc != 0

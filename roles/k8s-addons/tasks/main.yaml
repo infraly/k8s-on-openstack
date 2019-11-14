@@ -15,15 +15,14 @@
     dest: /home/ubuntu/manifests/k8s-keystone-auth.yaml
     src: "{{ role_path }}/templates/k8s-keystone-auth.yaml.j2"
 
-- name: kubectl apply nginx-ingress-controller
-  command: kubectl apply -f /home/ubuntu/manifests/nginx-ingress-controller.yaml
-
 - name: kubectl apply admin-user for dashboard
   command: kubectl apply -f /home/ubuntu/manifests/admin-user.yaml
 
-- name: include helm
+- name: Install helm
   include: helm.yaml
-  when: helm_include
+
+- name: Install NGINX ingress
+  include: nginx-ingress.yaml
 
 - name: copy syncconfig.yaml
   become: true
