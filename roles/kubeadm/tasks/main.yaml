@@ -8,6 +8,7 @@
     repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
     state: present
 
+# TODO Make this idempotent (cf. https://github.com/ansible/ansible/issues/18889)
 - name: Unhold docker and kubernetes packages
   command: "apt-mark unhold {{ item }}"
   with_items:
