@@ -42,9 +42,10 @@
     - kubelet_conf.stat.exists == False
 
 - name: Run kubeadm reset (on destroy)
-  command: "kubeadm reset --force"
-  when: state == "absent"
-  ignore_errors: True
+  shell: "kubeadm reset --force"
+  when:
+    - state == "absent"
+    - kubelet_conf.stat.exists == True
 
 - name: Generate a join token
   command: kubeadm token create --print-join-command
@@ -102,12 +103,11 @@
   stat:
     path: /etc/bash_completion.d/kubectl
   register: kubectl_bash_completion
-  when: state == "present"
 
 - name: Ensure kubectl bash_completion is present
   become: True
   shell: kubectl completion bash > /etc/bash_completion.d/kubectl
-  when: 
+  when:
     - kubectl_bash_completion.stat.exists == False
     - state == "present"
 
@@ -115,21 +115,21 @@
   stat:
     path: /opt/kubectx/kubectx
   register: kubectx
-  when: state == "present"
 
 - name: Clone kubectx repo
   git:
     repo: https://github.com/ahmetb/kubectx
     dest: /opt/kubectx
-  when: kubectx.stat.exists == False
-  when: state == "present"
+  when:
+    - kubectx.stat.exists == False
+    - state == "present"
 
 - name: Link kubectx
   file:
     state: link
     src: /opt/kubectx/kubectx
     dest: /usr/local/bin/kubectx
-  when: 
+  when:
     - kubectx.stat.exists == False
     - state == "present"
 
@@ -138,6 +138,6 @@
     state: link
     src: /opt/kubectx/kubens
     dest: /usr/local/bin/kubens
-  when: 
+  when:
     - kubectx.stat.exists == False
     - state == "present"

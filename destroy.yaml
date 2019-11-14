@@ -1,5 +1,63 @@
 ---
-- name: Destroy k8s cluster
+- name: Gather server facts from OpenStack
+  hosts: localhost
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        state: absent
+  tasks:
+    - name: Gather data about k8s master
+      os_server_info:
+        server: "{{ master_name }}"
+      register: os_server_info_master_result
+
+    - debug:
+        msg: "{{ os_server_info_master_result }}"
+
+    - name: Update inventory with data about k8s master
+      add_host:
+        name: "{{ item.name }}"
+        ansible_ssh_host: "{{ item.public_v4 }}"
+        ansible_ssh_user: ubuntu
+        groupname: master
+      loop: "{{ os_server_info_master_result.openstack_servers }}"
+
+    - name: Gather data about k8s nodes
+      os_server_info:
+        server: "{{ nodes_name }}*"
+      register: os_server_info_nodes_result
+
+    - name: Update inventory with data about k8s nodes
+      add_host:
+        name: "{{ item.name }}"
+        ansible_ssh_host: "{{ item.private_v4 }}"
+        ansible_ssh_user: ubuntu
+        ansible_ssh_common_args: '-o ProxyCommand="ssh -W %h:%p -q ubuntu@{{ hostvars[groups.master[0]][''ansible_ssh_host''] }}"'
+        groupname: nodes
+      when: item.name != master_name
+      loop: "{{ os_server_info_nodes_result.openstack_servers }}"
+
+- name: Destroy k8s cluster on nodes
+  hosts: nodes
+  become: true
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        state: absent
+  roles:
+    - kubeadm-nodes
+
+- name: Destroy k8s cluster on nodes
+  hosts: master
+  become: true
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        state: absent
+  roles:
+    - kubeadm-master
+
+- name: Destroy k8s cluster ressources in OpenStack
   hosts: localhost
   pre_tasks:
     - name: Set variables
@@ -7,27 +65,25 @@
         state: absent
 
   roles:
-    - kubeadm-nodes
-    - kubeadm-master
     - openstack-master
     - openstack-nodes
     - openstack-security-groups
 
   tasks:
-    - name: clear static routes
+    - name: Clear static routes
       shell: openstack router set --no-route "{{ router_name }}"
 
-    - name: delete router
+    - name: Delete router
       os_router:
         state: absent
         name: "{{ router_name }}"
 
-    - name: delete network
+    - name: Delete network
       os_network:
         state: absent
         name: "{{ network_name }}"
 
-    - name: delete subnet
+    - name: Delete subnet
       os_subnet:
         state: absent
         name: "{{ network_name }}"
