@@ -31,6 +31,7 @@ cgroupDriver: systemd
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
 kubernetesVersion: "{{ kubernetes_version }}"
+clusterName: "{{ name }}"
 apiServer:
   extraArgs:
     advertise-address: "{{ hostvars[groups.master[0]].ansible_ssh_host }}"
