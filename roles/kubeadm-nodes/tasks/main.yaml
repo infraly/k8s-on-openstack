@@ -7,7 +7,14 @@
   command: "{{ hostvars[groups.master[0]]['joincommand'] }}"
   args:
     creates: /etc/kubernetes/kubelet.conf
-  when: kubelet_conf.stat.exists == False
+  when:
+    - state == "present"
+    - kubelet_conf.stat.exists == False
+
+- name: Run kubeadm reset (on destroy)
+  command: "kubeadm reset --force"
+  when: state == "absent"
+  ignore_errors: True
 
 # For some reason "kubeadm join" does not write the correct value here
 - name: HACK - replace --network-plugin=cni with --network-plugin=kubenet
@@ -17,3 +24,4 @@
     replace: "network-plugin=kubenet"
   notify:
     - Restart kubelet
+  when: state == "present"

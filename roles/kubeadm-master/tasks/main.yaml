@@ -1,116 +1,143 @@
 - name: Check for existing kubelet configuration
   stat:
-      path: /etc/kubernetes/kubelet.conf
+    path: /etc/kubernetes/kubelet.conf
   register: kubelet_conf
 
 - name: Create kubeadm config file
   template:
-      src: files/kubeadm-init.yaml.j2
-      dest: /etc/kubeadm-init.conf.yaml
-      mode: 0600
+    src: files/kubeadm-init.yaml.j2
+    dest: /etc/kubeadm-init.conf.yaml
+    mode: 0600
+  when: state == "present"
 
 - name: Upload the openstack-cloud-controller-manager pod descriptor
   template:
-      src: files/openstack-cloud-controller-manager-pod.yaml.j2
-      dest: /etc/kubernetes/manifests/openstack-cloud-controller-manager-pod.yaml
-      mode: 0600
+    src: files/openstack-cloud-controller-manager-pod.yaml.j2
+    dest: /etc/kubernetes/manifests/openstack-cloud-controller-manager-pod.yaml
+    mode: 0600
+  when: state == "present"
 
 - name: Ensure /etc/kubernetes/pki/ directory is present
   become: True
   file:
-      path: /etc/kubernetes/pki/
-      state: directory
-      owner: root
-      group: root
-      mode: 0700
+    path: /etc/kubernetes/pki/
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  when: state == "present"
 
 - name: Upload webook kubeconfig file
   copy:
-      dest: /etc/kubernetes/pki/webhook.kubeconfig.yaml
-      src: files/webhook.kubeconfig.yaml
+    dest: /etc/kubernetes/pki/webhook.kubeconfig.yaml
+    src: files/webhook.kubeconfig.yaml
+  when: state == "present"
 
 - name: Run kubeadm init
   command: "kubeadm init --config /etc/kubeadm-init.conf.yaml"
   args:
-      creates: /etc/kubernetes/kubelet.conf
-  when: kubelet_conf.stat.exists == False
+    creates: /etc/kubernetes/kubelet.conf
+  when:
+    - state == "present"
+    - kubelet_conf.stat.exists == False
+
+- name: Run kubeadm reset (on destroy)
+  command: "kubeadm reset --force"
+  when: state == "absent"
+  ignore_errors: True
 
 - name: Generate a join token
   command: kubeadm token create --print-join-command
   register: joincommand
+  when: state == "present"
 
 - name: Set fact joincommand
   set_fact:
-      joincommand: "{{ joincommand.stdout }}"
+    joincommand: "{{ joincommand.stdout }}"
+  when: state == "present"
 
 - name: In case of upgrade make sure container versions are right for kube-apiserver
   replace:
-      path: /etc/kubernetes/manifests/kube-apiserver.yaml
-      regexp: v1.[0-9]{1,2}.[0-9]{1,2}
-      replace: "{{ kubernetes_version }}"
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    regexp: v1.[0-9]{1,2}.[0-9]{1,2}
+    replace: "{{ kubernetes_version }}"
+  when: state == "present"
 
 - name: In case of upgrade make sure container versions are right for kube-controller-manager
   replace:
-      path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-      regexp: v1.[0-9]{1,2}.[0-9]{1,2}
-      replace: "{{ kubernetes_version }}"
+    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
+    regexp: v1.[0-9]{1,2}.[0-9]{1,2}
+    replace: "{{ kubernetes_version }}"
+  when: state == "present"
 
 - name: In case of upgrade make sure container versions are right for kube-scheduler
   replace:
-      path: /etc/kubernetes/manifests/kube-scheduler.yaml
-      regexp: v1.[0-9]{1,2}.[0-9]{1,2}
-      replace: "{{ kubernetes_version }}"
+    path: /etc/kubernetes/manifests/kube-scheduler.yaml
+    regexp: v1.[0-9]{1,2}.[0-9]{1,2}
+    replace: "{{ kubernetes_version }}"
+  when: state == "present"
 
 - name: Ensure kubectl configuration directory is present
   become: True
   file:
-      path: /home/ubuntu/.kube
-      state: directory
-      owner: ubuntu
-      group: ubuntu
-      mode: 0700
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: 0700
+  when: state == "present"
 
 - name: Copy kubectl configuration for the default user
   become: True
   copy:
-      remote_src: True
-      src: /etc/kubernetes/admin.conf
-      dest: /home/ubuntu/.kube/config
-      owner: ubuntu
-      group: ubuntu
-      mode: 0600
+    remote_src: True
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
+    group: ubuntu
+    mode: 0600
+  when: state == "present"
 
 - name: Check for existing kubectl bash completion
   stat:
-      path: /etc/bash_completion.d/kubectl
+    path: /etc/bash_completion.d/kubectl
   register: kubectl_bash_completion
+  when: state == "present"
 
 - name: Ensure kubectl bash_completion is present
   become: True
   shell: kubectl completion bash > /etc/bash_completion.d/kubectl
-  when: kubectl_bash_completion.stat.exists == False
+  when: 
+    - kubectl_bash_completion.stat.exists == False
+    - state == "present"
 
 - name: Check for existing kubectx
   stat:
-      path: /opt/kubectx/kubectx
+    path: /opt/kubectx/kubectx
   register: kubectx
+  when: state == "present"
 
 - name: Clone kubectx repo
   git:
-      repo: https://github.com/ahmetb/kubectx
-      dest: /opt/kubectx
+    repo: https://github.com/ahmetb/kubectx
+    dest: /opt/kubectx
   when: kubectx.stat.exists == False
+  when: state == "present"
 
 - name: Link kubectx
   file:
-      state: link
-      src: /opt/kubectx/kubectx
-      dest: /usr/local/bin/kubectx
-  when: kubectx.stat.exists == False
+    state: link
+    src: /opt/kubectx/kubectx
+    dest: /usr/local/bin/kubectx
+  when: 
+    - kubectx.stat.exists == False
+    - state == "present"
 
 - name: Link kubens
   file:
-      state: link
-      src: /opt/kubectx/kubens
-      dest: /usr/local/bin/kubens
-  when: kubectx.stat.exists == False
+    state: link
+    src: /opt/kubectx/kubens
+    dest: /usr/local/bin/kubens
+  when: 
+    - kubectx.stat.exists == False
+    - state == "present"

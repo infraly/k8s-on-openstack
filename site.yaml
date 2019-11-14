@@ -98,6 +98,10 @@
 - name: k8s nodes setup
   hosts: nodes
   become: true
+  pre_tasks:
+    - name: Set variables
+      set_fact:
+        state: present
   tags:
     - bootstrap
   roles:
