@@ -1,9 +1,10 @@
 - name: Set variables
   set_fact:
     k8s_ingress_release_name: "nginx-ingress"
+    k8s_ingress_namespace: "kube-system"
 
 - name: Check if NGINX ingress is already installed
-  shell: helm status '{{ k8s_ingress_release_name }}'
+  shell: helm status -n 'kube-system' '{{ k8s_ingress_release_name }}'
   ignore_errors: True
   register: k8s_ingress_status
 
