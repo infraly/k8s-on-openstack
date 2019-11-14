@@ -11,9 +11,6 @@
         server: "{{ master_name }}"
       register: os_server_info_master_result
 
-    - debug:
-        msg: "{{ os_server_info_master_result }}"
-
     - name: Update inventory with data about k8s master
       add_host:
         name: "{{ item.name }}"
