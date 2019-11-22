@@ -34,7 +34,30 @@
       when: item.name != master_name
       loop: "{{ os_server_info_nodes_result.openstack_servers }}"
 
-- name: Destroy k8s cluster on nodes
+- name: Drain all worker nodes (using kubectl drain)
+  hosts: master
+  tasks:
+    - name: Delete all services (e.g., to release loadbalancers in OpenStack)
+      shell: "kubectl delete svc --all-namespaces --force --all"
+
+    - name: Wait until public IPs are released
+      shell: "kubectl get svc --all-namespaces -o jsonpath='{.items[*].status.loadBalancer.ingress[*].ip}'"
+      register: load_balancer_public_ips
+      retries: 10
+      delay: 6
+      until: load_balancer_public_ips.stdout | trim | length == 0
+
+    - name: Get the nodes to drain
+      # Get a list of worker nodes (separated by blanks)
+      shell: "kubectl get nodes --selector='!node-role.kubernetes.io/master' -o jsonpath='{.items[*].metadata.name}'"
+      register: worker_nodes_to_drain
+
+    - name: Drain each node worker node
+      shell: "kubectl drain --force --delete-local-data=true --grace-period=30 --ignore-daemonsets=false --timeout=60s '{{ item }}'"
+      loop: "{{ worker_nodes_to_drain.stdout.split(' ') }}"
+      ignore_errors: True
+
+- name: Destroy k8s cluster on nodes (using kubeadm reset)
   hosts: nodes
   become: true
   pre_tasks:
@@ -44,7 +67,7 @@
   roles:
     - kubeadm-nodes
 
-- name: Destroy k8s cluster on nodes
+- name: Destroy k8s cluster on nodes (using kubeadm reset)
   hosts: master
   become: true
   pre_tasks:
@@ -54,7 +77,7 @@
   roles:
     - kubeadm-master
 
-- name: Destroy k8s cluster ressources in OpenStack
+- name: Destroy OpenStack cluster ressources
   hosts: localhost
   pre_tasks:
     - name: Set variables
