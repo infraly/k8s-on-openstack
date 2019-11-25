@@ -53,7 +53,7 @@
       register: worker_nodes_to_drain
 
     - name: Drain each node worker node
-      shell: "kubectl drain --force --delete-local-data=true --grace-period=30 --ignore-daemonsets=false --timeout=60s '{{ item }}'"
+      shell: "kubectl drain --force --delete-local-data=true --grace-period=60 --ignore-daemonsets=true --timeout=120s '{{ item }}'"
       loop: "{{ worker_nodes_to_drain.stdout.split(' ') }}"
       ignore_errors: True
 
@@ -77,7 +77,7 @@
   roles:
     - kubeadm-master
 
-- name: Destroy OpenStack cluster ressources
+- name: Destroy OpenStack cluster resources
   hosts: localhost
   pre_tasks:
     - name: Set variables
