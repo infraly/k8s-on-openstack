@@ -36,6 +36,8 @@
 
 - name: Drain all worker nodes (using kubectl drain)
   hosts: master
+  gather_facts: no
+  ignore_unreachable: yes
   tasks:
     - name: Delete all services (e.g., to release loadbalancers in OpenStack)
       shell: "kubectl delete svc --all-namespaces --force --all"
@@ -60,6 +62,8 @@
 - name: Destroy k8s cluster on nodes (using kubeadm reset)
   hosts: nodes
   become: true
+  gather_facts: no
+  ignore_unreachable: yes
   pre_tasks:
     - name: Set variables
       set_fact:
@@ -70,6 +74,9 @@
 - name: Destroy k8s cluster on nodes (using kubeadm reset)
   hosts: master
   become: true
+  gather_facts: no
+  ignore_unreachable: yes
+  ignore_errors: yes
   pre_tasks:
     - name: Set variables
       set_fact:
