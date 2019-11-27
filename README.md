@@ -93,7 +93,7 @@ Once I edit `/var/lib/kubelet/kubeadm-flags.env` to contain --network-plugin=kub
 
 ## Prerequisites
 
-  * Ansible (tested with version 2.8.3)
+  * Ansible (tested with version 2.9.1)
   * Shade library required by Ansible OpenStack modules (`python-shade` for Debian)
 
 ## CI/CD
