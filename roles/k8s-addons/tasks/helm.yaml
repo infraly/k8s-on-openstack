@@ -10,7 +10,7 @@
 
 # Not added by default with Helm v3 (required for nginx-ingress)
 - name: add repos to helm
-  command: "helm repo add stable https://kubernetes-charts.storage.googleapis.com"
+  command: "helm repo add stable https://charts.helm.sh/stable"
 
 - name: update the helm repos
   command: helm repo update

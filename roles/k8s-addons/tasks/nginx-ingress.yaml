@@ -9,7 +9,7 @@
   register: k8s_ingress_status
 
 - name: Add stable repo to helm
-  shell: "helm repo add stable https://kubernetes-charts.storage.googleapis.com"
+  shell: "helm repo add stable https://charts.helm.sh/stable"
   when: k8s_ingress_status.rc != 0
 
 - name: Update helm repos
